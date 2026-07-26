@@ -2,24 +2,34 @@
 -- PHẦN 2: GUI (NHÁNH 1)
 -- ======================================================================
 
-local Rayfield = _G.HubState.Rayfield
+local Rayfield = _G.HubState and _G.HubState.Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
--- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6
-local loadPart3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua")) -- Logic Bảng Điều Khiển
-if loadPart3 then loadPart3() end
+-- Đảm bảo khởi tạo đủ bảng toàn cục
+_G.HubState = _G.HubState or {}
+_G.HubLogic = _G.HubLogic or {}
+_G.HubState.pinnedPlayers = _G.HubState.pinnedPlayers or {}
+_G.HubState.pinnedOrder = _G.HubState.pinnedOrder or {}
+_G.HubState.currentPinnedIndex = _G.HubState.currentPinnedIndex or 1
 
-local loadPart4 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void")) -- Logic One Shot
-if loadPart4 then loadPart4() end
+-- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6 (An toàn với pcall)
+local function safeLoad(url, name)
+    local success, err = pcall(function()
+        local func = loadstring(game:HttpGet(url))
+        if func then func() end
+    end)
+    if not success then
+        warn("Lỗi tải module " .. name .. ": " .. tostring(err))
+    end
+end
 
-local loadPart5 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All")) -- Logic Kill All
-if loadPart5 then loadPart5() end
-
-local loadPart6 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting")) -- Logic Setting & Save/Load
-if loadPart6 then loadPart6() end
+safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua", "Nhánh 3 (Main)")
+safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
+safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
+safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
 
 
 -- 2. KHỞI TẠO CÁC MINI GUI
@@ -210,8 +220,8 @@ local Drop_HeightMode = MainTab:CreateDropdown({
        if val == "MODE: TRÊN TRỜI" then _G.HubState.selectedHeightMode = 1
        elseif val == "MODE: DƯỚI ĐẤT" then _G.HubState.selectedHeightMode = 2
        else _G.HubState.selectedHeightMode = 3 end
-       if _G.HubState.isClassicTrackingActive then _G.HubLogic.StartFlying("Classic")
-       elseif _G.HubState.isNearTrackingActive then _G.HubLogic.StartFlying("Near") end
+       if _G.HubState.isClassicTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Classic")
+       elseif _G.HubState.isNearTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Near") end
    end,
 })
 
@@ -226,8 +236,8 @@ local Drop_DirMode = MainTab:CreateDropdown({
        if val == "ORBIT (XOAY)" then _G.HubState.selectedDirMode = 1
        elseif val == "BACKSTAB (SAU)" then _G.HubState.selectedDirMode = 2
        else _G.HubState.selectedDirMode = 3 end
-       if _G.HubState.isClassicTrackingActive then _G.HubLogic.StartFlying("Classic")
-       elseif _G.HubState.isNearTrackingActive then _G.HubLogic.StartFlying("Near") end
+       if _G.HubState.isClassicTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Classic")
+       elseif _G.HubState.isNearTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Near") end
    end,
 })
 
@@ -243,8 +253,8 @@ local Drop_NetMode = MainTab:CreateDropdown({
        elseif val == "NET: AUTO-RESET" then _G.HubState.selectedNetMode = 2
        elseif val == "NET: SMART CHASE" then _G.HubState.selectedNetMode = 3
        else _G.HubState.selectedNetMode = 4 end
-       if _G.HubState.isClassicTrackingActive then _G.HubLogic.StartFlying("Classic")
-       elseif _G.HubState.isNearTrackingActive then _G.HubLogic.StartFlying("Near") end
+       if _G.HubState.isClassicTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Classic")
+       elseif _G.HubState.isNearTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Near") end
    end,
 })
 
@@ -463,7 +473,7 @@ PinnedDropdown = PlayerTab:CreateDropdown({
         if _G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers() then
             if _G.HubState.isClassicTrackingActive then
                 if not _G.HubState.selectedTargetPlayer or not _G.HubState.pinnedPlayers[_G.HubState.selectedTargetPlayer] then
-                    _G.HubState.selectedTargetPlayer = _G.HubState.pinnedOrder[_G.HubState.currentPinnedIndex]
+                    _G.HubState.selectedTargetPlayer = _G.HubState.pinnedOrder and _G.HubState.pinnedOrder[_G.HubState.currentPinnedIndex or 1]
                 end
             end
         end
@@ -474,15 +484,15 @@ updatePlayers()
 PlayerTab:CreateButton({ Name = "Làm mới danh sách (Refresh)", Callback = updatePlayers })
 
 Players.PlayerRemoving:Connect(function(player)
-	if _G.HubState.pinnedPlayers and _G.HubState.pinnedPlayers[player] then 
+    if _G.HubState.pinnedPlayers and _G.HubState.pinnedPlayers[player] then 
         _G.HubState.pinnedPlayers[player] = nil 
         if _G.HubLogic.UpdatePinnedOrder then _G.HubLogic.UpdatePinnedOrder() end
     end
-	if _G.HubState.selectedTargetPlayer == player then 
-		if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
+    if _G.HubState.selectedTargetPlayer == player then 
+        if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
             if _G.HubLogic.StopFlying then _G.HubLogic.StopFlying() end
         end
-	end
+    end
     task.wait(0.5); updatePlayers()
 end)
 
