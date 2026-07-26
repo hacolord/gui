@@ -9,7 +9,7 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6
-local loadPart3 = loadstring(game:HttpGet("🛑https://...🛑")) -- Logic Bảng Điều Khiển
+local loadPart3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua")) -- Logic Bảng Điều Khiển
 if loadPart3 then loadPart3() end
 
 local loadPart4 = loadstring(game:HttpGet("🛑https://...🛑")) -- Logic One Shot
