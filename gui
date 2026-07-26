@@ -18,7 +18,7 @@ if loadPart4 then loadPart4() end
 local loadPart5 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All")) -- Logic Kill All
 if loadPart5 then loadPart5() end
 
-local loadPart6 = loadstring(game:HttpGet("🛑https://...🛑")) -- Logic Setting & Save/Load
+local loadPart6 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting")) -- Logic Setting & Save/Load
 if loadPart6 then loadPart6() end
 
 
