@@ -12,10 +12,10 @@ local UIS = game:GetService("UserInputService")
 local loadPart3 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua")) -- Logic Bảng Điều Khiển
 if loadPart3 then loadPart3() end
 
-local loadPart4 = loadstring(game:HttpGet("🛑https://...🛑")) -- Logic One Shot
+local loadPart4 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void")) -- Logic One Shot
 if loadPart4 then loadPart4() end
 
-local loadPart5 = loadstring(game:HttpGet("🛑https://...🛑")) -- Logic Kill All
+local loadPart5 = loadstring(game:HttpGet("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All")) -- Logic Kill All
 if loadPart5 then loadPart5() end
 
 local loadPart6 = loadstring(game:HttpGet("🛑https://...🛑")) -- Logic Setting & Save/Load
