@@ -8,8 +8,8 @@ local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
--- Khai báo Token GitHub PAT
-local token = "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"
+-- Khai báo Token GitHub Classic (ghp_)
+local token = "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" -- Thay token ghp_ của bạn vào đây
 
 -- Đảm bảo khởi tạo đủ bảng toàn cục
 _G.HubState = _G.HubState or {}
@@ -23,17 +23,27 @@ local function safeLoad(url, name)
     local success, err = pcall(function()
         local headers = {
             ["Authorization"] = "token " .. token,
-            ["Accept"] = "application/vnd.github.v3.raw"
+            ["Accept"] = "application/vnd.github.v3.raw",
+            ["User-Agent"] = "RobloxApp/LuaApp"
         }
         local response = game:HttpGetAsync(url, true, headers)
-        local func = loadstring(response)
-        if func then func() end
+        if response and response ~= "" then
+            local func, loadErr = loadstring(response)
+            if func then 
+                func() 
+            else
+                warn("Lỗi cú pháp trong module " .. name .. ": " .. tostring(loadErr))
+            end
+        else
+            warn("Nội dung tải về của module " .. name .. " bị rỗng!")
+        end
     end)
     if not success then
         warn("Lỗi tải module " .. name .. ": " .. tostring(err))
     end
 end
 
+-- Tải các module bằng URL chuẩn dành cho Private Repositories
 safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua", "Nhánh 3 (Main)")
 safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
