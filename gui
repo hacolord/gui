@@ -4,12 +4,13 @@
 
 local Rayfield = _G.HubState and _G.HubState.Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- Khai báo Token GitHub Classic (ghp_)
-local token = "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" -- Thay token ghp_ của bạn vào đây
+local token = "tao không ghi tokens để tránh bay acc" -- Thay token ghp_ của bạn vào đây
 
 -- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
 local req = (syn and syn.request) or (http and http.request) or request or http_request
@@ -26,7 +27,11 @@ _G.HubState.espItemsEnabled = _G.HubState.espItemsEnabled or false
 _G.HubState.espItemsGlow = _G.HubState.espItemsGlow or false
 _G.HubState.espItemsName = _G.HubState.espItemsName or false
 
--- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6, MISC (An toàn với pcall và Token xác thực Private Repo)
+-- Bảng lưu trữ đối tượng ESP đang hoạt động
+local espItemCache = {}
+local espItemConnection = nil
+
+-- 1. TẢI CÁC MODULE EXTERNAL
 local function safeLoad(url, name)
     local success, err = pcall(function()
         if not req then
@@ -64,47 +69,138 @@ local function safeLoad(url, name)
     end
 end
 
--- Tải các module bằng URL chuẩn dành cho Private Repositories
+-- Tải các module chính
 safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua", "Nhánh 3 (Main)")
 safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
-safeLoad("https://raw.githubusercontent.com/hacolord/esp-item/refs/heads/main/main.lua", "ESP Items Logic")
 
--- ADAPTER LOGIC CHO ESP ITEMS (Đảm bảo logic URL tương thích 100% với GUI Rayfield)
+
+-- LOGIC XỬ LÝ ESP ITEM THEO THỜI GIAN THỰC TRONG WORKSHOP/ITEMS
+local function removeEspFromItem(item)
+    if espItemCache[item] then
+        if espItemCache[item].highlight then espItemCache[item].highlight:Destroy() end
+        if espItemCache[item].billboard then espItemCache[item].billboard:Destroy() end
+        espItemCache[item] = nil
+    end
+end
+
+local function applyEspToItem(item)
+    if not item or not _G.HubState.espItemsEnabled then return end
+    if espItemCache[item] then removeEspFromItem(item) end
+
+    local targetPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
+    if not targetPart then return end
+
+    local cacheData = {}
+
+    -- Highlight (Glow)
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Item_Highlight"
+    highlight.Adornee = item
+    highlight.FillColor = Color3.fromRGB(0, 255, 127)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+    highlight.Enabled = _G.HubState.espItemsGlow
+    highlight.Parent = item
+    cacheData.highlight = highlight
+
+    -- BillboardGui (Name)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP_Item_Name"
+    billboard.Adornee = targetPart
+    billboard.Size = UDim2.new(0, 100, 0, 30)
+    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Enabled = _G.HubState.espItemsName
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = item.Name
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextStrokeTransparency = 0
+    label.Font = Enum.Font.SourceSansBold
+    label.TextSize = 13
+    label.Parent = billboard
+
+    billboard.Parent = targetPart
+    cacheData.billboard = billboard
+
+    espItemCache[item] = cacheData
+end
+
+local function clearAllEspItems()
+    for item, _ in pairs(espItemCache) do
+        removeEspFromItem(item)
+    end
+    espItemCache = {}
+    if espItemConnection then
+        espItemConnection:Disconnect()
+        espItemConnection = nil
+    end
+end
+
+local function startEspItemsRealtime()
+    clearAllEspItems()
+    if not _G.HubState.espItemsEnabled then return end
+
+    -- Tìm khu vực chứa items trong Workspace
+    local itemsFolder = Workspace:FindFirstChild("Items") or Workspace:FindFirstChild("ItemsSpawns") or Workspace:FindFirstChild("DroppedItems") or Workspace
+
+    -- Khởi tạo ESP cho các item đang có sẵn
+    for _, child in ipairs(itemsFolder:GetChildren()) do
+        if child:IsA("Tool") or child:IsA("Model") or child:IsA("BasePart") then
+            if child.Name ~= "Terrain" and not Players:GetPlayerFromCharacter(child) then
+                applyEspToItem(child)
+            end
+        end
+    end
+
+    -- Theo dõi theo thời gian thực (Thêm/Xóa)
+    espItemConnection = itemsFolder.ChildAdded:Connect(function(child)
+        task.wait(0.1)
+        if _G.HubState.espItemsEnabled then
+            applyEspToItem(child)
+        end
+    end)
+end
+
+-- ĐỒNG BỘ CÁC HÀM XỬ LÝ LOGIC VÀO _G.HubLogic
 _G.HubLogic.SetEspItemsActive = function(enabled)
     _G.HubState.espItemsEnabled = enabled
-    if _G.EspItemModule and type(_G.EspItemModule.Toggle) == "function" then
-        _G.EspItemModule.Toggle(enabled)
-    elseif type(_G.ToggleEspItems) == "function" then
-        _G.ToggleEspItems(enabled)
+    if enabled then
+        startEspItemsRealtime()
+    else
+        clearAllEspItems()
+    end
+    local w = _G.HubState.Widgets or {}
+    if w.espItemBtn then
+        w.espItemBtn.Text = enabled and "ESP ITEM\nON" or "ESP ITEM\nOFF"
     end
 end
 
 _G.HubLogic.ToggleEspItems = function()
     local newState = not _G.HubState.espItemsEnabled
     _G.HubLogic.SetEspItemsActive(newState)
-    local w = _G.HubState.Widgets or {}
-    if w.espItemBtn then
-        w.espItemBtn.Text = newState and "ESP ITEM\nON" or "ESP ITEM\nOFF"
-    end
 end
 
 _G.HubLogic.UpdateEspItemsGlow = function(enabled)
     _G.HubState.espItemsGlow = enabled
-    if _G.EspItemModule and type(_G.EspItemModule.SetGlow) == "function" then
-        _G.EspItemModule.SetGlow(enabled)
-    elseif type(_G.SetEspItemsGlow) == "function" then
-        _G.SetEspItemsGlow(enabled)
+    for _, data in pairs(espItemCache) do
+        if data.highlight then
+            data.highlight.Enabled = enabled
+        end
     end
 end
 
 _G.HubLogic.UpdateEspItemsName = function(enabled)
     _G.HubState.espItemsName = enabled
-    if _G.EspItemModule and type(_G.EspItemModule.SetName) == "function" then
-        _G.EspItemModule.SetName(enabled)
-    elseif type(_G.SetEspItemsName) == "function" then
-        _G.SetEspItemsName(enabled)
+    for _, data in pairs(espItemCache) do
+        if data.billboard then
+            data.billboard.Enabled = enabled
+        end
     end
 end
 
@@ -117,7 +213,7 @@ _G.HubLogic.ToggleEspNpc = function()
 end
 
 
--- 2. KHỞI TẠO CÁC MINI GUI
+-- 2. KHỞI TẠO CÁC MINI GUI DỰA TRÊN CẤU TRÚC GỐC
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "TargetFlyMiniGuiSystem"
 screenGui.ResetOnSpawn = false
@@ -171,7 +267,7 @@ voidBtn.Text = "VOID\nOFF"
 local kbWidget, kbBtn = createMiniWidget("KBWidget", UDim2.new(1, -70, 1, -80), true)
 kbBtn.Text = "KB\nOFF"
 
--- MiniGUI cho Page Misc
+-- DUY NHẤT 1 MiniGUI CHO ESP ITEM
 local espItemWidget, espItemBtn = createMiniWidget("EspItemWidget", UDim2.new(0.5, -120, 0.5, -25), false)
 espItemBtn.Text = "ESP ITEM\nOFF"
 
@@ -643,6 +739,9 @@ local Toggle_EspNpc = MiscTab:CreateToggle({
    CurrentValue = false,
    Callback = function(Value)
        espNpcWidget.Visible = Value
+       if _G.HubLogic.ToggleEspNpc then
+           _G.HubLogic.ToggleEspNpc()
+       end
    end,
 })
 
