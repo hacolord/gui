@@ -9,7 +9,7 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- Khai báo Token GitHub Classic (ghp_)
-local token = "tao không ghi tokens để tránh bay acc" -- Thay token ghp_ của bạn vào đây
+local token = "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" -- Thay token ghp_ của bạn vào đây
 
 -- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
 local req = (syn and syn.request) or (http and http.request) or request or http_request
@@ -21,7 +21,7 @@ _G.HubState.pinnedPlayers = _G.HubState.pinnedPlayers or {}
 _G.HubState.pinnedOrder = _G.HubState.pinnedOrder or {}
 _G.HubState.currentPinnedIndex = _G.HubState.currentPinnedIndex or 1
 
--- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6 (An toàn với pcall và Token xác thực Private Repo)
+-- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6, MISC (An toàn với pcall và Token xác thực Private Repo)
 local function safeLoad(url, name)
     local success, err = pcall(function()
         if not req then
@@ -64,6 +64,7 @@ safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main
 safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
+safeLoad("https://raw.githubusercontent.com/hacolord/esp-item/refs/heads/main/main.lua", "ESP Items Logic")
 
 
 -- 2. KHỞI TẠO CÁC MINI GUI
@@ -73,11 +74,11 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 -- Helper tạo Widget Mini GUI
-local function createMiniWidget(name, position, visible)
+local function createMiniWidget(name, position, visible, customSize)
+    local size = customSize or UDim2.new(0, 50, 0, 50)
     local widget = Instance.new("Frame")
     widget.Name = name
-    widget.Size = UDim2.new(0, 50, 0, 50)
-    widget.Position = position
+    widget.Size = size
     widget.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     widget.BorderSizePixel = 0
     widget.Active = true
@@ -120,6 +121,14 @@ voidBtn.Text = "VOID\nOFF"
 local kbWidget, kbBtn = createMiniWidget("KBWidget", UDim2.new(1, -70, 1, -80), true)
 kbBtn.Text = "KB\nOFF"
 
+-- MiniGUI cho Page Misc
+local espItemWidget, espItemBtn = createMiniWidget("EspItemWidget", UDim2.new(0.5, -120, 0.5, -25), false)
+espItemBtn.Text = "ESP ITEM\nOFF"
+
+local espNpcWidget, espNpcBtn = createMiniWidget("EspNpcWidget", UDim2.new(0.5, -60, 0.5, -25), false, UDim2.new(0, 45, 0, 45))
+espNpcBtn.Text = "ESP NPC\nOFF"
+espNpcBtn.TextSize = 8
+
 -- Lưu tham chiếu Mini GUI vào HubState
 _G.HubState.Widgets = {
     classic = classicWidget, classicBtn = classicActionBtn,
@@ -128,7 +137,9 @@ _G.HubState.Widgets = {
     purple = purpleWidget, purpleBtn = purpleFlyBtn,
     killAll = killAllWidget, killAllBtn = killAllActionBtn,
     void = voidWidget, voidBtn = voidBtn,
-    kb = kbWidget, kbBtn = kbBtn
+    kb = kbWidget, kbBtn = kbBtn,
+    espItem = espItemWidget, espItemBtn = espItemBtn,
+    espNpc = espNpcWidget, espNpcBtn = espNpcBtn
 }
 
 -- Tính năng Draggable cho Mini GUI
@@ -167,6 +178,8 @@ makeDraggable(purpleWidget, purpleFlyBtn)
 makeDraggable(killAllWidget, killAllActionBtn)
 makeDraggable(voidWidget, voidBtn)
 makeDraggable(kbWidget, kbBtn)
+makeDraggable(espItemWidget, espItemBtn)
+makeDraggable(espNpcWidget, espNpcBtn)
 
 -- Sự kiện Click Mini GUI
 classicActionBtn.MouseButton1Up:Connect(function()
@@ -189,6 +202,12 @@ voidBtn.MouseButton1Click:Connect(function()
 end)
 kbBtn.MouseButton1Click:Connect(function()
     if not isDraggingWidget and _G.HubLogic.ToggleKB then _G.HubLogic.ToggleKB() end
+end)
+espItemBtn.MouseButton1Click:Connect(function()
+    if not isDraggingWidget and _G.HubLogic.ToggleEspItems then _G.HubLogic.ToggleEspItems() end
+end)
+espNpcBtn.MouseButton1Click:Connect(function()
+    if not isDraggingWidget and _G.HubLogic.ToggleEspNpc then _G.HubLogic.ToggleEspNpc() end
 end)
 
 
@@ -427,36 +446,36 @@ local Toggle_KillAllMiniVis = KillAllTab:CreateToggle({
 	Callback = function(Value) killAllWidget.Visible = Value end,
 })
 
-KillAllTab:CreateToggle({
+local Toggle_TouchFling = KillAllTab:CreateToggle({
 	Name = "Touch Fling", CurrentValue = false,
 	Callback = function(Value)
         if _G.HubLogic.ToggleTouchFling then _G.HubLogic.ToggleTouchFling(Value) end
     end,
 })
 
-KillAllTab:CreateToggle({
+local Toggle_AntiFling = KillAllTab:CreateToggle({
 	Name = "Anti Fling", CurrentValue = false,
 	Callback = function(Value) _G.HubState.isAntiFlingEnabled = Value end,
 })
 
 KillAllTab:CreateSection("-mode")
-KillAllTab:CreateInput({
+local Input_KillAllDelay = KillAllTab:CreateInput({
 	Name = "Delay", PlaceholderText = "Nhập Delay...", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_Delay = tonumber(Text) or 1 end,
 })
-KillAllTab:CreateInput({
+local Input_KillAllFirstDead = KillAllTab:CreateInput({
 	Name = "Số người chết đầu", PlaceholderText = "Nhập số...", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_FirstDeadCount = tonumber(Text) or 0 end,
 })
-KillAllTab:CreateInput({
+local Input_KillAllLowHealth = KillAllTab:CreateInput({
 	Name = "Số người ưu tiên yếu máu", PlaceholderText = "Nhập số...", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_LowHealthCount = tonumber(Text) or 0 end,
 })
-KillAllTab:CreateInput({
+local Input_KillAllDist = KillAllTab:CreateInput({
 	Name = "Khoảng cách dịch chuyển", PlaceholderText = "Mặc định: 1.5", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_TeleportDistance = tonumber(Text) or 1.5 end,
 })
-KillAllTab:CreateDropdown({
+local Drop_KillAllDir = KillAllTab:CreateDropdown({
 	Name = "Hướng", Options = {"drowning/", "đằng sau", "đằng trước", "bên trái", "bên phait"},
 	CurrentOption = {_G.HubState.killAll_DirectionMode or "đằng sau"}, MultipleOptions = false,
 	Callback = function(Options) _G.HubState.killAll_DirectionMode = type(Options) == "table" and Options[1] or Options end,
@@ -533,7 +552,66 @@ end)
 Players.PlayerAdded:Connect(function() task.wait(0.5); updatePlayers() end)
 
 
--- PAGE 5: CÀI ĐẶT
+-- PAGE 5: MISC
+local MiscTab = Window:CreateTab("Misc", 4483362458)
+
+MiscTab:CreateSection("-esp")
+local Toggle_EspItem = MiscTab:CreateToggle({
+   Name = "esp items",
+   CurrentValue = false,
+   Callback = function(Value)
+       espItemWidget.Visible = Value
+       if not Value and _G.HubLogic.SetEspItemsActive then
+           _G.HubLogic.SetEspItemsActive(false)
+       end
+   end,
+})
+
+local Toggle_EspItemGlow = MiscTab:CreateToggle({
+   Name = "phát sáng",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.espItemsGlow = Value
+       if _G.HubLogic.UpdateEspItemsGlow then _G.HubLogic.UpdateEspItemsGlow(Value) end
+   end,
+})
+
+local Toggle_EspItemName = MiscTab:CreateToggle({
+   Name = "tên items",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.espItemsName = Value
+       if _G.HubLogic.UpdateEspItemsName then _G.HubLogic.UpdateEspItemsName(Value) end
+   end,
+})
+
+MiscTab:CreateSection("-esp npc")
+local Toggle_EspNpc = MiscTab:CreateToggle({
+   Name = "esp npc",
+   CurrentValue = false,
+   Callback = function(Value)
+       espNpcWidget.Visible = Value
+   end,
+})
+
+local Toggle_EspNpcGlow = MiscTab:CreateToggle({
+   Name = "phát sáng",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.espNpcGlow = Value
+   end,
+})
+
+local Toggle_EspNpcName = MiscTab:CreateToggle({
+   Name = "tên npc",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.espNpcName = Value
+   end,
+})
+
+
+-- PAGE 6: CÀI ĐẶT
 local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
 SettingsTab:CreateSection("-cấu hình toàn bộ hệ thống")
 
@@ -552,9 +630,14 @@ SettingsTab:CreateButton({
                 Input_Vel = Input_Vel, Drop_HeightMode = Drop_HeightMode, Drop_DirMode = Drop_DirMode,
                 Drop_NetMode = Drop_NetMode, Drop_CombatMode = Drop_CombatMode, Toggle_ClassicTracker = Toggle_ClassicTracker,
                 Toggle_NearTracker = Toggle_NearTracker, Toggle_OrangeFly = Toggle_OrangeFly, Toggle_PurpleFly = Toggle_PurpleFly,
-                Toggle_Noclip = Toggle_Noclip, InputStudsUI = InputStudsUI, DropNgangUI = DropNgangUI,
-                DropTrenUI = DropTrenUI, ToggleVoidUI = ToggleVoidUI, ToggleKBUI = ToggleKBUI,
-                Toggle_KillAllMiniVis = Toggle_KillAllMiniVis, PinnedDropdown = PinnedDropdown
+                Toggle_Noclip = Toggle_Noclip, Toggle_VisualServer = Toggle_VisualServer, InputStudsUI = InputStudsUI,
+                InputTimeUI = InputTimeUI, DropNgangUI = DropNgangUI, DropTrenUI = DropTrenUI,
+                ToggleVoidUI = ToggleVoidUI, ToggleKBUI = ToggleKBUI, Toggle_KillAllMiniVis = Toggle_KillAllMiniVis,
+                Toggle_TouchFling = Toggle_TouchFling, Toggle_AntiFling = Toggle_AntiFling, Input_KillAllDelay = Input_KillAllDelay,
+                Input_KillAllFirstDead = Input_KillAllFirstDead, Input_KillAllLowHealth = Input_KillAllLowHealth,
+                Input_KillAllDist = Input_KillAllDist, Drop_KillAllDir = Drop_KillAllDir, PinnedDropdown = PinnedDropdown,
+                Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName,
+                Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName
             })
         end
     end,
