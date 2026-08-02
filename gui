@@ -9,7 +9,7 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- Khai báo Token GitHub Classic (ghp_)
-local token = "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" -- Thay token ghp_ của bạn vào đây
+local token = "tao không ghi tokens để tránh bay acc" -- Thay token ghp_ của bạn vào đây
 
 -- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
 local req = (syn and syn.request) or (http and http.request) or request or http_request
@@ -20,6 +20,11 @@ _G.HubLogic = _G.HubLogic or {}
 _G.HubState.pinnedPlayers = _G.HubState.pinnedPlayers or {}
 _G.HubState.pinnedOrder = _G.HubState.pinnedOrder or {}
 _G.HubState.currentPinnedIndex = _G.HubState.currentPinnedIndex or 1
+
+-- Trạng thái mặc định cho ESP Items
+_G.HubState.espItemsEnabled = _G.HubState.espItemsEnabled or false
+_G.HubState.espItemsGlow = _G.HubState.espItemsGlow or false
+_G.HubState.espItemsName = _G.HubState.espItemsName or false
 
 -- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6, MISC (An toàn với pcall và Token xác thực Private Repo)
 local function safeLoad(url, name)
@@ -65,6 +70,51 @@ safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void",
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
 safeLoad("https://raw.githubusercontent.com/hacolord/esp-item/refs/heads/main/main.lua", "ESP Items Logic")
+
+-- ADAPTER LOGIC CHO ESP ITEMS (Đảm bảo logic URL tương thích 100% với GUI Rayfield)
+_G.HubLogic.SetEspItemsActive = function(enabled)
+    _G.HubState.espItemsEnabled = enabled
+    if _G.EspItemModule and type(_G.EspItemModule.Toggle) == "function" then
+        _G.EspItemModule.Toggle(enabled)
+    elseif type(_G.ToggleEspItems) == "function" then
+        _G.ToggleEspItems(enabled)
+    end
+end
+
+_G.HubLogic.ToggleEspItems = function()
+    local newState = not _G.HubState.espItemsEnabled
+    _G.HubLogic.SetEspItemsActive(newState)
+    local w = _G.HubState.Widgets or {}
+    if w.espItemBtn then
+        w.espItemBtn.Text = newState and "ESP ITEM\nON" or "ESP ITEM\nOFF"
+    end
+end
+
+_G.HubLogic.UpdateEspItemsGlow = function(enabled)
+    _G.HubState.espItemsGlow = enabled
+    if _G.EspItemModule and type(_G.EspItemModule.SetGlow) == "function" then
+        _G.EspItemModule.SetGlow(enabled)
+    elseif type(_G.SetEspItemsGlow) == "function" then
+        _G.SetEspItemsGlow(enabled)
+    end
+end
+
+_G.HubLogic.UpdateEspItemsName = function(enabled)
+    _G.HubState.espItemsName = enabled
+    if _G.EspItemModule and type(_G.EspItemModule.SetName) == "function" then
+        _G.EspItemModule.SetName(enabled)
+    elseif type(_G.SetEspItemsName) == "function" then
+        _G.SetEspItemsName(enabled)
+    end
+end
+
+_G.HubLogic.ToggleEspNpc = function()
+    _G.HubState.espNpcEnabled = not _G.HubState.espNpcEnabled
+    local w = _G.HubState.Widgets or {}
+    if w.espNpcBtn then
+        w.espNpcBtn.Text = _G.HubState.espNpcEnabled and "ESP NPC\nON" or "ESP NPC\nOFF"
+    end
+end
 
 
 -- 2. KHỞI TẠO CÁC MINI GUI
@@ -561,8 +611,8 @@ local Toggle_EspItem = MiscTab:CreateToggle({
    CurrentValue = false,
    Callback = function(Value)
        espItemWidget.Visible = Value
-       if not Value and _G.HubLogic.SetEspItemsActive then
-           _G.HubLogic.SetEspItemsActive(false)
+       if _G.HubLogic.SetEspItemsActive then
+           _G.HubLogic.SetEspItemsActive(Value)
        end
    end,
 })
@@ -571,8 +621,9 @@ local Toggle_EspItemGlow = MiscTab:CreateToggle({
    Name = "phát sáng",
    CurrentValue = false,
    Callback = function(Value)
-       _G.HubState.espItemsGlow = Value
-       if _G.HubLogic.UpdateEspItemsGlow then _G.HubLogic.UpdateEspItemsGlow(Value) end
+       if _G.HubLogic.UpdateEspItemsGlow then
+           _G.HubLogic.UpdateEspItemsGlow(Value)
+       end
    end,
 })
 
@@ -580,8 +631,9 @@ local Toggle_EspItemName = MiscTab:CreateToggle({
    Name = "tên items",
    CurrentValue = false,
    Callback = function(Value)
-       _G.HubState.espItemsName = Value
-       if _G.HubLogic.UpdateEspItemsName then _G.HubLogic.UpdateEspItemsName(Value) end
+       if _G.HubLogic.UpdateEspItemsName then
+           _G.HubLogic.UpdateEspItemsName(Value)
+       end
    end,
 })
 
