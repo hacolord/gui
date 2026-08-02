@@ -10,7 +10,7 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- Khai báo Token GitHub Classic (ghp_)
-local token = "tao không ghi tokens để tránh bay acc" -- Thay token ghp_ của bạn vào đây
+local token = "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" -- Thay token ghp_ của bạn vào đây
 
 -- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
 local req = (syn and syn.request) or (http and http.request) or request or http_request
