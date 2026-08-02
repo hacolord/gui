@@ -11,6 +11,9 @@ local UIS = game:GetService("UserInputService")
 -- Khai báo Token GitHub Classic (ghp_)
 local token = "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" -- Thay token ghp_ của bạn vào đây
 
+-- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
+local req = (syn and syn.request) or (http and http.request) or request or http_request
+
 -- Đảm bảo khởi tạo đủ bảng toàn cục
 _G.HubState = _G.HubState or {}
 _G.HubLogic = _G.HubLogic or {}
@@ -21,21 +24,34 @@ _G.HubState.currentPinnedIndex = _G.HubState.currentPinnedIndex or 1
 -- 1. TẢI TOÀN BỘ LOGIC TỪ CÁC PHẦN 3, 4, 5, 6 (An toàn với pcall và Token xác thực Private Repo)
 local function safeLoad(url, name)
     local success, err = pcall(function()
-        local headers = {
-            ["Authorization"] = "token " .. token,
-            ["Accept"] = "application/vnd.github.v3.raw",
-            ["User-Agent"] = "RobloxApp/LuaApp"
-        }
-        local response = game:HttpGetAsync(url, true, headers)
-        if response and response ~= "" then
-            local func, loadErr = loadstring(response)
-            if func then 
-                func() 
+        if not req then
+            error("Executor không hỗ trợ hàm request!")
+        end
+
+        local response = req({
+            Url = url,
+            Method = "GET",
+            Headers = {
+                ["Authorization"] = "token " .. token,
+                ["Accept"] = "application/vnd.github.v3.raw",
+                ["User-Agent"] = "RobloxApp/LuaApp"
+            }
+        })
+
+        if response and response.Success then
+            if response.Body and response.Body ~= "" then
+                local func, loadErr = loadstring(response.Body)
+                if func then 
+                    func() 
+                else
+                    warn("Lỗi cú pháp trong module " .. name .. ": " .. tostring(loadErr))
+                end
             else
-                warn("Lỗi cú pháp trong module " .. name .. ": " .. tostring(loadErr))
+                warn("Nội dung tải về của module " .. name .. " bị rỗng!")
             end
         else
-            warn("Nội dung tải về của module " .. name .. " bị rỗng!")
+            local statusCode = response and response.StatusCode or "Unknown"
+            warn("Lỗi HTTP (" .. tostring(statusCode) .. ") khi tải module " .. name)
         end
     end)
     if not success then
