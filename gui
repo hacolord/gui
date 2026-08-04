@@ -27,6 +27,12 @@ _G.HubState.espItemsEnabled = _G.HubState.espItemsEnabled or false
 _G.HubState.espItemsGlow = _G.HubState.espItemsGlow or false
 _G.HubState.espItemsName = _G.HubState.espItemsName or false
 
+-- Trạng thái mặc định cho Fling
+_G.HubState.flingTime = _G.HubState.flingTime or 1
+_G.HubState.flingPower = _G.HubState.flingPower or 1000000000
+_G.HubState.flingVelocity = _G.HubState.flingVelocity or 1000000000
+_G.HubState.isFlingActive = _G.HubState.isFlingActive or false
+
 -- Bảng lưu trữ đối tượng ESP đang hoạt động
 local espItemCache = {}
 local espItemConnection = nil
@@ -74,6 +80,7 @@ safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main
 safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
+safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
 
 
 -- LOGIC XỬ LÝ ESP ITEM THEO THỜI GIAN THỰC TRONG WORKSHOP/ITEMS
@@ -212,6 +219,17 @@ _G.HubLogic.ToggleEspNpc = function()
     end
 end
 
+_G.HubLogic.ToggleFling = function()
+    _G.HubState.isFlingActive = not _G.HubState.isFlingActive
+    local w = _G.HubState.Widgets or {}
+    if w.flingBtn then
+        w.flingBtn.Text = _G.HubState.isFlingActive and "FLING\nON" or "FLING\nOFF"
+    end
+    if _G.HubLogic.StartFlingLoop then
+        _G.HubLogic.StartFlingLoop()
+    end
+end
+
 
 -- 2. KHỞI TẠO CÁC MINI GUI DỰA TRÊN CẤU TRÚC GỐC
 local screenGui = Instance.new("ScreenGui")
@@ -275,6 +293,9 @@ local espNpcWidget, espNpcBtn = createMiniWidget("EspNpcWidget", UDim2.new(0.5, 
 espNpcBtn.Text = "ESP NPC\nOFF"
 espNpcBtn.TextSize = 8
 
+local flingWidget, flingBtn = createMiniWidget("FlingWidget", UDim2.new(0.5, 380, 0.5, -25), false)
+flingBtn.Text = "FLING\nOFF"
+
 -- Lưu tham chiếu Mini GUI vào HubState
 _G.HubState.Widgets = {
     classic = classicWidget, classicBtn = classicActionBtn,
@@ -285,7 +306,8 @@ _G.HubState.Widgets = {
     void = voidWidget, voidBtn = voidBtn,
     kb = kbWidget, kbBtn = kbBtn,
     espItem = espItemWidget, espItemBtn = espItemBtn,
-    espNpc = espNpcWidget, espNpcBtn = espNpcBtn
+    espNpc = espNpcWidget, espNpcBtn = espNpcBtn,
+    fling = flingWidget, flingBtn = flingBtn
 }
 
 -- Tính năng Draggable cho Mini GUI
@@ -326,6 +348,7 @@ makeDraggable(voidWidget, voidBtn)
 makeDraggable(kbWidget, kbBtn)
 makeDraggable(espItemWidget, espItemBtn)
 makeDraggable(espNpcWidget, espNpcBtn)
+makeDraggable(flingWidget, flingBtn)
 
 -- Sự kiện Click Mini GUI
 classicActionBtn.MouseButton1Up:Connect(function()
@@ -354,6 +377,9 @@ espItemBtn.MouseButton1Click:Connect(function()
 end)
 espNpcBtn.MouseButton1Click:Connect(function()
     if not isDraggingWidget and _G.HubLogic.ToggleEspNpc then _G.HubLogic.ToggleEspNpc() end
+end)
+flingBtn.MouseButton1Click:Connect(function()
+    if not isDraggingWidget and _G.HubLogic.ToggleFling then _G.HubLogic.ToggleFling() end
 end)
 
 
@@ -593,15 +619,36 @@ local Toggle_KillAllMiniVis = KillAllTab:CreateToggle({
 })
 
 local Toggle_TouchFling = KillAllTab:CreateToggle({
-	Name = "Touch Fling", CurrentValue = false,
+	Name = "Touch Fling (chưa làm)", CurrentValue = false,
 	Callback = function(Value)
         if _G.HubLogic.ToggleTouchFling then _G.HubLogic.ToggleTouchFling(Value) end
     end,
 })
 
+local Toggle_FlingMiniVis = KillAllTab:CreateToggle({
+	Name = "minigui fling", CurrentValue = false,
+	Callback = function(Value) flingWidget.Visible = Value end,
+})
+
 local Toggle_AntiFling = KillAllTab:CreateToggle({
 	Name = "Anti Fling", CurrentValue = false,
 	Callback = function(Value) _G.HubState.isAntiFlingEnabled = Value end,
+})
+
+KillAllTab:CreateSection("-fling config")
+local Input_FlingTime = KillAllTab:CreateInput({
+	Name = "thời gian", PlaceholderText = "1", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.flingTime = tonumber(Text) or 1 end,
+})
+
+local Input_FlingPower = KillAllTab:CreateInput({
+	Name = "lực", PlaceholderText = "1000000000", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.flingPower = tonumber(Text) or 1000000000 end,
+})
+
+local Input_FlingVel = KillAllTab:CreateInput({
+	Name = "vận tốc", PlaceholderText = "1000000000", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.flingVelocity = tonumber(Text) or 1000000000 end,
 })
 
 KillAllTab:CreateSection("-mode")
@@ -687,7 +734,7 @@ Players.PlayerRemoving:Connect(function(player)
         _G.HubState.pinnedPlayers[player] = nil 
         if _G.HubLogic.UpdatePinnedOrder then _G.HubLogic.UpdatePinnedOrder() end
     end
-    if _G.HubState.selectedTargetPlayer == player then 
+    if _G.HubState.selectedTargetPlayer == player me
         if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
             if _G.HubLogic.StopFlying then _G.HubLogic.StopFlying() end
         end
@@ -788,7 +835,9 @@ SettingsTab:CreateButton({
                 Input_KillAllFirstDead = Input_KillAllFirstDead, Input_KillAllLowHealth = Input_KillAllLowHealth,
                 Input_KillAllDist = Input_KillAllDist, Drop_KillAllDir = Drop_KillAllDir, PinnedDropdown = PinnedDropdown,
                 Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName,
-                Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName
+                Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName,
+                Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
+                Input_FlingVel = Input_FlingVel
             })
         end
     end,
