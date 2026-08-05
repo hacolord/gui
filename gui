@@ -734,7 +734,7 @@ Players.PlayerRemoving:Connect(function(player)
         _G.HubState.pinnedPlayers[player] = nil 
         if _G.HubLogic.UpdatePinnedOrder then _G.HubLogic.UpdatePinnedOrder() end
     end
-    if _G.HubState.selectedTargetPlayer == player me
+    if _G.HubState.selectedTargetPlayer == player then
         if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
             if _G.HubLogic.StopFlying then _G.HubLogic.StopFlying() end
         end
