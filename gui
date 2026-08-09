@@ -81,6 +81,7 @@ safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void",
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
 safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
+safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
 
 
 -- LOGIC XỬ LÝ ESP ITEM THEO THỜI GIAN THỰC TRONG WORKSHOP/ITEMS
@@ -808,6 +809,30 @@ local Toggle_EspNpcName = MiscTab:CreateToggle({
    end,
 })
 
+MiscTab:CreateSection("-music system")
+local Input_MusicID = MiscTab:CreateInput({
+   Name = "Music ID (Roblox Sound Asset)",
+   PlaceholderText = "Nhập ID (Ví dụ: 1848354536)...",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.musicID = Text
+       if _G.HubLogic.UpdateMusicID then
+           _G.HubLogic.UpdateMusicID(Text)
+       end
+   end,
+})
+
+local Toggle_Music = MiscTab:CreateToggle({
+   Name = "Phát Nhạc (Loop)",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.isMusicEnabled = Value
+       if _G.HubLogic.ToggleMusic then
+           _G.HubLogic.ToggleMusic(Value)
+       end
+   end,
+})
+
 
 -- PAGE 6: CÀI ĐẶT
 local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
@@ -837,7 +862,7 @@ SettingsTab:CreateButton({
                 Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName,
                 Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName,
                 Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
-                Input_FlingVel = Input_FlingVel
+                Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music
             })
         end
     end,
