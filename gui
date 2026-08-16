@@ -10,7 +10,7 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- Khai báo Token GitHub Classic (ghp_)
-local token = "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" -- Thay token ghp_ của bạn vào đây
+local token = "🛑" -- Thay token ghp_ của bạn vào đây
 
 -- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
 local req = (syn and syn.request) or (http and http.request) or request or http_request
@@ -38,7 +38,7 @@ _G.HubState.isAvoidEnabled = _G.HubState.isAvoidEnabled or false
 _G.HubState.avoidRange = _G.HubState.avoidRange or 20
 _G.HubState.avoidTpDistance = _G.HubState.avoidTpDistance or 5
 _G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
-_G.HubState.avoidMode = _G.HubState.avoidMode or "cổ điển"
+_G.HubState.avoidMode = _G.HubState.avoidMode or 1
 
 -- Bảng lưu trữ đối tượng ESP đang hoạt động
 local espItemCache = {}
@@ -867,7 +867,30 @@ local Input_AvoidRange = MiscTab:CreateInput({
    end,
 })
 
--- TÁCH BUTTON THEO ĐÚNG YÊU CẦU: NẰM GIỮA DANH SÁCH AVOID VÀ KHOẢNG CÁCH TP
+local Drop_AvoidMode = MiscTab:CreateDropdown({
+   Name = "mode",
+   Options = {"Cổ điển", "Random"},
+   CurrentOption = {"Cổ điển"},
+   MultipleOptions = false,
+   Callback = function(Option)
+       local val = type(Option) == "table" and Option[1] or Option
+       if val == "Cổ điển" then
+           _G.HubState.avoidMode = 1
+       elseif val == "Random" then
+           _G.HubState.avoidMode = 2
+       end
+   end,
+})
+
+local Input_AvoidTpDist = MiscTab:CreateInput({
+   Name = "khoảng cách tp",
+   PlaceholderText = "Mặc định: 5",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.avoidTpDistance = tonumber(Text) or 5
+   end,
+})
+
 Drop_AvoidList = MiscTab:CreateDropdown({
    Name = "danh sách avoid",
    Options = {},
@@ -882,25 +905,6 @@ Drop_AvoidList = MiscTab:CreateDropdown({
                _G.HubState.avoidTargets[p] = true
            end
        end
-   end,
-})
-
-local Drop_AvoidMode = MiscTab:CreateDropdown({
-   Name = "mode",
-   Options = {"cổ điển", "random"},
-   CurrentOption = {_G.HubState.avoidMode or "cổ điển"},
-   MultipleOptions = false,
-   Callback = function(Option)
-       _G.HubState.avoidMode = type(Option) == "table" and Option[1] or Option
-   end,
-})
-
-local Input_AvoidTpDist = MiscTab:CreateInput({
-   Name = "khoảng cách tp",
-   PlaceholderText = "Mặc định: 5",
-   RemoveTextOnFocusLost = false,
-   Callback = function(Text)
-       _G.HubState.avoidTpDistance = tonumber(Text) or 5
    end,
 })
 
@@ -934,8 +938,7 @@ SettingsTab:CreateButton({
                 Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName,
                 Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
                 Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
-                Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidList = Drop_AvoidList,
-                Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist
+                Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList
             })
         end
     end,
