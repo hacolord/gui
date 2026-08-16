@@ -38,7 +38,7 @@ _G.HubState.isAvoidEnabled = _G.HubState.isAvoidEnabled or false
 _G.HubState.avoidRange = _G.HubState.avoidRange or 20
 _G.HubState.avoidTpDistance = _G.HubState.avoidTpDistance or 5
 _G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
-_G.HubState.avoidMode = _G.HubState.avoidMode or 1 -- 1: Cổ Điển, 2: Random
+_G.HubState.avoidMode = _G.HubState.avoidMode or "cổ điển"
 
 -- Bảng lưu trữ đối tượng ESP đang hoạt động
 local espItemCache = {}
@@ -589,88 +589,363 @@ OneShotTab:CreateSection("-Phía")
 local DropNgangUI = OneShotTab:CreateDropdown({
     Name = "Vị trí Ngang", Options = {"Trước", "Phải", "Sau", "Trái", "Hủy"},
     CurrentOption = {_G.HubState.mode1Name or "Hủy"}, MultipleOptions = false,
-    Callback = function(Option)
-        local val = type(Option) == "table" and Option[1] or Option
-        _G.HubState.mode1Name = val
+    Callback = function(Options)
+        _G.HubState.mode1Name = type(Options) == "table" and Options[1] or Options
+        if _G.HubLogic.UpdateAttachment then _G.HubLogic.UpdateAttachment() end
+    end,
+})
+local DropTrenUI = OneShotTab:CreateDropdown({
+    Name = "Vị trí Trên", Options = {"Dưới đất", "Lên trời", "Hủy"},
+    CurrentOption = {_G.HubState.mode2Name or "Hủy"}, MultipleOptions = false,
+    Callback = function(Options)
+        _G.HubState.mode2Name = type(Options) == "table" and Options[1] or Options
         if _G.HubLogic.UpdateAttachment then _G.HubLogic.UpdateAttachment() end
     end,
 })
 
-
--- PAGE 3: MISC TAB (CHỨA AVOID SYSTEM)
-local MiscTab = Window:CreateTab("Misc", 4483362458)
-
-MiscTab:CreateSection("Avoid System")
-
-local Toggle_Avoid = MiscTab:CreateToggle({
-    Name = "Bật/Tắt Avoid System",
-    CurrentValue = _G.HubState.isAvoidEnabled or false,
+OneShotTab:CreateSection("-Main")
+local ToggleVoidUI = OneShotTab:CreateToggle({
+    Name = "Hiển thị Minigui Void", CurrentValue = true,
     Callback = function(Value)
-        if _G.HubLogic.ToggleAvoid then
-            _G.HubLogic.ToggleAvoid(Value)
-        else
-            _G.HubState.isAvoidEnabled = Value
-        end
+        _G.HubState.isMiniVoidVisible = Value
+        voidWidget.Visible = Value
+    end,
+})
+local ToggleKBUI = OneShotTab:CreateToggle({
+    Name = "Hiển thị Minigui Kill Bricks", CurrentValue = true,
+    Callback = function(Value)
+        _G.HubState.isMiniKBVisible = Value
+        kbWidget.Visible = Value
     end,
 })
 
-local function getPlayerNames()
-    local names = {}
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= localPlayer then
-            table.insert(names, p.Name)
+
+-- PAGE 3: KILL ALL
+local KillAllTab = Window:CreateTab("Kill All", 4483362458)
+
+KillAllTab:CreateSection("-Main")
+local Toggle_KillAllMiniVis = KillAllTab:CreateToggle({
+	Name = "MiniGui", CurrentValue = false,
+	Callback = function(Value) killAllWidget.Visible = Value end,
+})
+
+local Toggle_TouchFling = KillAllTab:CreateToggle({
+	Name = "Touch Fling (chưa làm)", CurrentValue = false,
+	Callback = function(Value)
+        if _G.HubLogic.ToggleTouchFling then _G.HubLogic.ToggleTouchFling(Value) end
+    end,
+})
+
+local Toggle_FlingMiniVis = KillAllTab:CreateToggle({
+	Name = "minigui fling", CurrentValue = false,
+	Callback = function(Value) flingWidget.Visible = Value end,
+})
+
+local Toggle_AntiFling = KillAllTab:CreateToggle({
+	Name = "Anti Fling", CurrentValue = false,
+	Callback = function(Value) _G.HubState.isAntiFlingEnabled = Value end,
+})
+
+KillAllTab:CreateSection("-fling config")
+local Input_FlingTime = KillAllTab:CreateInput({
+	Name = "thời gian", PlaceholderText = "1", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.flingTime = tonumber(Text) or 1 end,
+})
+
+local Input_FlingPower = KillAllTab:CreateInput({
+	Name = "lực", PlaceholderText = "1000000000", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.flingPower = tonumber(Text) or 1000000000 end,
+})
+
+local Input_FlingVel = KillAllTab:CreateInput({
+	Name = "vận tốc", PlaceholderText = "1000000000", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.flingVelocity = tonumber(Text) or 1000000000 end,
+})
+
+KillAllTab:CreateSection("-mode")
+local Input_KillAllDelay = KillAllTab:CreateInput({
+	Name = "Delay", PlaceholderText = "Nhập Delay...", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.killAll_Delay = tonumber(Text) or 1 end,
+})
+local Input_KillAllFirstDead = KillAllTab:CreateInput({
+	Name = "Số người chết đầu", PlaceholderText = "Nhập số...", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.killAll_FirstDeadCount = tonumber(Text) or 0 end,
+})
+local Input_KillAllLowHealth = KillAllTab:CreateInput({
+	Name = "Số người ưu tiên yếu máu", PlaceholderText = "Nhập số...", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.killAll_LowHealthCount = tonumber(Text) or 0 end,
+})
+local Input_KillAllDist = KillAllTab:CreateInput({
+	Name = "Khoảng cách dịch chuyển", PlaceholderText = "Mặc định: 1.5", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.killAll_TeleportDistance = tonumber(Text) or 1.5 end,
+})
+local Drop_KillAllDir = KillAllTab:CreateDropdown({
+	Name = "Hướng", Options = {"drowning/", "đằng sau", "đằng trước", "bên trái", "bên phait"},
+	CurrentOption = {_G.HubState.killAll_DirectionMode or "đằng sau"}, MultipleOptions = false,
+	Callback = function(Options) _G.HubState.killAll_DirectionMode = type(Options) == "table" and Options[1] or Options end,
+})
+
+
+-- PAGE 4: DANH SÁCH MỤC TIÊU
+local PlayerTab = Window:CreateTab("Danh Sách Mục Tiêu", 4483362458)
+local PlayerDropdown, PinnedDropdown, Drop_AvoidList
+
+local function updatePlayers()
+    local playerNames, nameToPlayer = {}, {}
+    for _, v in ipairs(Players:GetPlayers()) do
+        if v ~= localPlayer then
+            local displayNameStr = v.DisplayName .. " (" .. v.Name .. ")"
+            table.insert(playerNames, displayNameStr)
+            nameToPlayer[displayNameStr] = v
         end
     end
-    if #names == 0 then table.insert(names, "Không có người chơi") end
-    return names
+    _G.HubState.nameToPlayer = nameToPlayer
+    if PlayerDropdown then PlayerDropdown:Refresh(playerNames, true) end
+    if PinnedDropdown then PinnedDropdown:Refresh(playerNames, true) end
+    if Drop_AvoidList then Drop_AvoidList:Refresh(playerNames, true) end
 end
 
-local Drop_AvoidList = MiscTab:CreateDropdown({
-    Name = "Danh Sách Tránh Né (Avoid List)",
-    Options = getPlayerNames(),
-    CurrentOption = {},
-    MultipleOptions = true,
+PlayerDropdown = PlayerTab:CreateDropdown({
+   Name = "Chọn mục tiêu (Mục tiêu đơn)", Options = {}, CurrentOption = {""}, MultipleOptions = false,
+   Callback = function(Option)
+      local targetName = type(Option) == "table" and Option[1] or Option
+      local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[targetName]
+      if p then
+         if _G.HubState.isNearTrackingActive then return end
+         _G.HubState.selectedTargetPlayer = p
+         if _G.HubState.isClassicTrackingActive and _G.HubLogic.StartFlying then _G.HubLogic.StartFlying("Classic") end
+      end
+   end,
+})
+
+PinnedDropdown = PlayerTab:CreateDropdown({
+    Name = "Danh sách ghim (Ghim 1 ném 1, Ghim nhiều ném nhiều)", Options = {}, CurrentOption = {}, MultipleOptions = true,
     Callback = function(Options)
-        local selectedList = type(Options) == "table" and Options or {Options}
-        _G.HubState.avoidTargets = {}
-        for _, name in ipairs(selectedList) do
-            local p = Players:FindFirstChild(name)
-            if p then
-                _G.HubState.avoidTargets[p] = true
+        local selectedNames = type(Options) == "table" and Options or {Options}
+        _G.HubState.pinnedPlayers = {}
+        for _, nameStr in ipairs(selectedNames) do
+            local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
+            if p then _G.HubState.pinnedPlayers[p] = true end
+        end
+        if _G.HubLogic.UpdatePinnedOrder then _G.HubLogic.UpdatePinnedOrder() end
+        if _G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers() then
+            if _G.HubState.isClassicTrackingActive then
+                if not _G.HubState.selectedTargetPlayer or not _G.HubState.pinnedPlayers[_G.HubState.selectedTargetPlayer] then
+                    _G.HubState.selectedTargetPlayer = _G.HubState.pinnedOrder and _G.HubState.pinnedOrder[_G.HubState.currentPinnedIndex or 1]
+                end
             end
         end
     end,
 })
 
+updatePlayers()
+PlayerTab:CreateButton({ Name = "Làm mới danh sách (Refresh)", Callback = updatePlayers })
+
+Players.PlayerRemoving:Connect(function(player)
+    if _G.HubState.pinnedPlayers and _G.HubState.pinnedPlayers[player] then 
+        _G.HubState.pinnedPlayers[player] = nil 
+        if _G.HubLogic.UpdatePinnedOrder then _G.HubLogic.UpdatePinnedOrder() end
+    end
+    if _G.HubState.avoidTargets and _G.HubState.avoidTargets[player] then
+        _G.HubState.avoidTargets[player] = nil
+    end
+    if _G.HubState.selectedTargetPlayer == player then
+        if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
+            if _G.HubLogic.StopFlying then _G.HubLogic.StopFlying() end
+        end
+    end
+    task.wait(0.5); updatePlayers()
+end)
+
+Players.PlayerAdded:Connect(function() task.wait(0.5); updatePlayers() end)
+
+
+-- PAGE 5: MISC
+local MiscTab = Window:CreateTab("Misc", 4483362458)
+
+MiscTab:CreateSection("-esp")
+local Toggle_EspItem = MiscTab:CreateToggle({
+   Name = "esp items",
+   CurrentValue = false,
+   Callback = function(Value)
+       espItemWidget.Visible = Value
+       if _G.HubLogic.SetEspItemsActive then
+           _G.HubLogic.SetEspItemsActive(Value)
+       end
+   end,
+})
+
+local Toggle_EspItemGlow = MiscTab:CreateToggle({
+   Name = "phát sáng",
+   CurrentValue = false,
+   Callback = function(Value)
+       if _G.HubLogic.UpdateEspItemsGlow then
+           _G.HubLogic.UpdateEspItemsGlow(Value)
+       end
+   end,
+})
+
+local Toggle_EspItemName = MiscTab:CreateToggle({
+   Name = "tên items",
+   CurrentValue = false,
+   Callback = function(Value)
+       if _G.HubLogic.UpdateEspItemsName then
+           _G.HubLogic.UpdateEspItemsName(Value)
+       end
+   end,
+})
+
+MiscTab:CreateSection("-esp npc")
+local Toggle_EspNpc = MiscTab:CreateToggle({
+   Name = "esp npc",
+   CurrentValue = false,
+   Callback = function(Value)
+       espNpcWidget.Visible = Value
+       if _G.HubLogic.ToggleEspNpc then
+           _G.HubLogic.ToggleEspNpc()
+       end
+   end,
+})
+
+local Toggle_EspNpcGlow = MiscTab:CreateToggle({
+   Name = "phát sáng",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.espNpcGlow = Value
+   end,
+})
+
+local Toggle_EspNpcName = MiscTab:CreateToggle({
+   Name = "tên npc",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.espNpcName = Value
+   end,
+})
+
+MiscTab:CreateSection("-music system")
+local Input_MusicID = MiscTab:CreateInput({
+   Name = "Music ID (Roblox Sound Asset)",
+   PlaceholderText = "Nhập ID (Ví dụ: 1848354536)...",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.musicID = Text
+       if _G.HubLogic.UpdateMusicID then
+           _G.HubLogic.UpdateMusicID(Text)
+       end
+   end,
+})
+
+local Toggle_Music = MiscTab:CreateToggle({
+   Name = "Phát Nhạc (Loop)",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.isMusicEnabled = Value
+       if _G.HubLogic.ToggleMusic then
+           _G.HubLogic.ToggleMusic(Value)
+       end
+   end,
+})
+
+MiscTab:CreateSection("-avoid system")
+
+local Toggle_Avoid = MiscTab:CreateToggle({
+   Name = "avoid/tránh xa",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.isAvoidEnabled = Value
+       if _G.HubLogic.ToggleAvoid then _G.HubLogic.ToggleAvoid(Value) end
+   end,
+})
+
+local Input_AvoidRange = MiscTab:CreateInput({
+   Name = "phạm vi avoid",
+   PlaceholderText = "Mặc định: 20",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.avoidRange = tonumber(Text) or 20
+   end,
+})
+
+-- TÁCH BUTTON THEO ĐÚNG YÊU CẦU: NẰM GIỮA DANH SÁCH AVOID VÀ KHOẢNG CÁCH TP
+Drop_AvoidList = MiscTab:CreateDropdown({
+   Name = "danh sách avoid",
+   Options = {},
+   CurrentOption = {},
+   MultipleOptions = true,
+   Callback = function(Options)
+       local selectedNames = type(Options) == "table" and Options or {Options}
+       _G.HubState.avoidTargets = {}
+       for _, nameStr in ipairs(selectedNames) do
+           local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
+           if p then
+               _G.HubState.avoidTargets[p] = true
+           end
+       end
+   end,
+})
+
 local Drop_AvoidMode = MiscTab:CreateDropdown({
-    Name = "Avoid Mode",
-    Options = {"Cổ Điển", "Random"},
-    CurrentOption = {_G.HubState.avoidMode == 2 and "Random" or "Cổ Điển"},
-    MultipleOptions = false,
-    Callback = function(Option)
-        local val = type(Option) == "table" and Option[1] or Option
-        if val == "Random" then
-            _G.HubState.avoidMode = 2
-        else
-            _G.HubState.avoidMode = 1
+   Name = "mode",
+   Options = {"cổ điển", "random"},
+   CurrentOption = {_G.HubState.avoidMode or "cổ điển"},
+   MultipleOptions = false,
+   Callback = function(Option)
+       _G.HubState.avoidMode = type(Option) == "table" and Option[1] or Option
+   end,
+})
+
+local Input_AvoidTpDist = MiscTab:CreateInput({
+   Name = "khoảng cách tp",
+   PlaceholderText = "Mặc định: 5",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.avoidTpDistance = tonumber(Text) or 5
+   end,
+})
+
+
+-- PAGE 6: CÀI ĐẶT
+local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
+SettingsTab:CreateSection("-cấu hình toàn bộ hệ thống")
+
+SettingsTab:CreateButton({
+   Name = "Lưu Toàn Bộ GUI (Save All)",
+   Callback = function() if _G.HubLogic.SaveAllConfig then _G.HubLogic.SaveAllConfig() end end,
+})
+
+SettingsTab:CreateButton({
+    Name = "Tải Lại Toàn Bộ GUI (Load All)",
+    Callback = function()
+        if _G.HubLogic.LoadAllConfig then
+            _G.HubLogic.LoadAllConfig({
+                Input_Speed = Input_Speed, Input_Sides = Input_Sides, Input_Dist = Input_Dist,
+                Input_Height = Input_Height, Input_Chase = Input_Chase, Input_Pred = Input_Pred,
+                Input_Vel = Input_Vel, Drop_HeightMode = Drop_HeightMode, Drop_DirMode = Drop_DirMode,
+                Drop_NetMode = Drop_NetMode, Drop_CombatMode = Drop_CombatMode, Toggle_ClassicTracker = Toggle_ClassicTracker,
+                Toggle_NearTracker = Toggle_NearTracker, Toggle_OrangeFly = Toggle_OrangeFly, Toggle_PurpleFly = Toggle_PurpleFly,
+                Toggle_Noclip = Toggle_Noclip, Toggle_VisualServer = Toggle_VisualServer, InputStudsUI = InputStudsUI,
+                InputTimeUI = InputTimeUI, DropNgangUI = DropNgangUI, DropTrenUI = DropTrenUI,
+                ToggleVoidUI = ToggleVoidUI, ToggleKBUI = ToggleKBUI, Toggle_KillAllMiniVis = Toggle_KillAllMiniVis,
+                Toggle_TouchFling = Toggle_TouchFling, Toggle_AntiFling = Toggle_AntiFling, Input_KillAllDelay = Input_KillAllDelay,
+                Input_KillAllFirstDead = Input_KillAllFirstDead, Input_KillAllLowHealth = Input_KillAllLowHealth,
+                Input_KillAllDist = Input_KillAllDist, Drop_KillAllDir = Drop_KillAllDir, PinnedDropdown = PinnedDropdown,
+                Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName,
+                Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName,
+                Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
+                Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
+                Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidList = Drop_AvoidList,
+                Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist
+            })
         end
     end,
 })
 
-local Input_AvoidTpDist = MiscTab:CreateInput({
-    Name = "Khoảng cách TP",
-    PlaceholderText = "5",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        _G.HubState.avoidTpDistance = tonumber(Text) or 5
-    end,
-})
-
-local Input_AvoidRange = MiscTab:CreateInput({
-    Name = "Phạm vi Avoid",
-    PlaceholderText = "20",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(Text)
-        _G.HubState.avoidRange = tonumber(Text) or 20
-    end,
+local Btn_DeleteAll = SettingsTab:CreateButton({
+   Name = "Xóa Toàn Bộ GUI & Logic (Delete All)",
+   Callback = function()
+       if _G.HubLogic.DestroyAll then
+           _G.HubLogic.DestroyAll()
+       end
+   end,
 })
