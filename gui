@@ -1,5 +1,5 @@
 -- ======================================================================
--- PHẦN 2: GUI (NHÁNH 1) - ĐÃ CẬP NHẬT URL SAFE LOAD AVOID
+-- PHẦN 2: GUI (NHÁNH 1) - ĐÃ CẬP NHẬT URL SAFE LOAD AVOID & CẤU TRÚC AVOID SYSTEM UI
 -- ======================================================================
 
 local Rayfield = _G.HubState and _G.HubState.Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -37,8 +37,8 @@ _G.HubState.isFlingActive = _G.HubState.isFlingActive or false
 _G.HubState.isAvoidEnabled = _G.HubState.isAvoidEnabled or false
 _G.HubState.avoidRange = _G.HubState.avoidRange or 20
 _G.HubState.avoidTpDistance = _G.HubState.avoidTpDistance or 5
-_G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
 _G.HubState.avoidMode = _G.HubState.avoidMode or 1
+_G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
 
 -- Bảng lưu trữ đối tượng ESP đang hoạt động
 local espItemCache = {}
@@ -83,7 +83,7 @@ local function safeLoad(url, name)
 end
 
 -- Tải các module chính
-safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua", "Nhánh 3 (Main)")
+safeLoad("https://raw.githubusercontent.com/hacolord/test_1/refs/heads/main/Main.lua", "Nhánh 3 (Tracker)")
 safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
 safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
@@ -867,6 +867,23 @@ local Input_AvoidRange = MiscTab:CreateInput({
    end,
 })
 
+Drop_AvoidList = MiscTab:CreateDropdown({
+   Name = "danh sách avoid",
+   Options = {},
+   CurrentOption = {},
+   MultipleOptions = true,
+   Callback = function(Options)
+       local selectedNames = type(Options) == "table" and Options or {Options}
+       _G.HubState.avoidTargets = {}
+       for _, nameStr in ipairs(selectedNames) do
+           local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
+           if p then
+               _G.HubState.avoidTargets[p] = true
+           end
+       end
+   end,
+})
+
 local Drop_AvoidMode = MiscTab:CreateDropdown({
    Name = "mode",
    Options = {"Cổ điển", "Random"},
@@ -888,23 +905,6 @@ local Input_AvoidTpDist = MiscTab:CreateInput({
    RemoveTextOnFocusLost = false,
    Callback = function(Text)
        _G.HubState.avoidTpDistance = tonumber(Text) or 5
-   end,
-})
-
-Drop_AvoidList = MiscTab:CreateDropdown({
-   Name = "danh sách avoid",
-   Options = {},
-   CurrentOption = {},
-   MultipleOptions = true,
-   Callback = function(Options)
-       local selectedNames = type(Options) == "table" and Options or {Options}
-       _G.HubState.avoidTargets = {}
-       for _, nameStr in ipairs(selectedNames) do
-           local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
-           if p then
-               _G.HubState.avoidTargets[p] = true
-           end
-       end
    end,
 })
 
