@@ -82,6 +82,7 @@ safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/K
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
 safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
 safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
+safeLoad("https://raw.githubusercontent.com/hacolord/avoid/refs/heads/main/avoid", "Avoid Module")
 
 
 -- LOGIC XỬ LÝ ESP ITEM THEO THỜI GIAN THỰC TRONG WORKSHOP/ITEMS
@@ -308,7 +309,8 @@ _G.HubState.Widgets = {
     kb = kbWidget, kbBtn = kbBtn,
     espItem = espItemWidget, espItemBtn = espItemBtn,
     espNpc = espNpcWidget, espNpcBtn = espNpcBtn,
-    fling = flingWidget, flingBtn = flingBtn
+    fling = flingWidget, flingBtn = flingBtn,
+    screenGui = screenGui
 }
 
 -- Tính năng Draggable cho Mini GUI
@@ -392,6 +394,7 @@ local Window = Rayfield:CreateWindow({
    ConfigurationSaving = { Enabled = false },
    Discord = { Enabled = false }
 })
+_G.HubState.RayfieldWindow = Window
 
 -- PAGE 1: BẢNG CẤU HÌNH (TRACKER)
 local MainTab = Window:CreateTab("Bảng Cấu Hình", 4483362458)
@@ -678,7 +681,7 @@ local Drop_KillAllDir = KillAllTab:CreateDropdown({
 
 -- PAGE 4: DANH SÁCH MỤC TIÊU
 local PlayerTab = Window:CreateTab("Danh Sách Mục Tiêu", 4483362458)
-local PlayerDropdown, PinnedDropdown
+local PlayerDropdown, PinnedDropdown, Drop_AvoidList
 
 local function updatePlayers()
     local playerNames, nameToPlayer = {}, {}
@@ -692,6 +695,7 @@ local function updatePlayers()
     _G.HubState.nameToPlayer = nameToPlayer
     if PlayerDropdown then PlayerDropdown:Refresh(playerNames, true) end
     if PinnedDropdown then PinnedDropdown:Refresh(playerNames, true) end
+    if Drop_AvoidList then Drop_AvoidList:Refresh(playerNames, true) end
 end
 
 PlayerDropdown = PlayerTab:CreateDropdown({
@@ -833,6 +837,53 @@ local Toggle_Music = MiscTab:CreateToggle({
    end,
 })
 
+MiscTab:CreateSection("-avoid system")
+
+local Toggle_Avoid = MiscTab:CreateToggle({
+   Name = "avoid/tránh xa",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.isAvoidEnabled = Value
+       if _G.HubLogic.ToggleAvoid then _G.HubLogic.ToggleAvoid(Value) end
+   end,
+})
+
+local Input_AvoidRange = MiscTab:CreateInput({
+   Name = "phạm vi avoid",
+   PlaceholderText = "Mặc định: 20",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.avoidRange = tonumber(Text) or 20
+   end,
+})
+
+local Input_AvoidTpDist = MiscTab:CreateInput({
+   Name = "khoảng cách tp",
+   PlaceholderText = "Mặc định: 5",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.avoidTpDistance = tonumber(Text) or 5
+   end,
+})
+
+Drop_AvoidList = MiscTab:CreateDropdown({
+   Name = "danh sách avoid",
+   Options = {},
+   CurrentOption = {},
+   MultipleOptions = true,
+   Callback = function(Options)
+       local selectedNames = type(Options) == "table" and Options or {Options}
+       local targetPlayers = {}
+       for _, nameStr in ipairs(selectedNames) do
+           local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
+           if p then
+               table.insert(targetPlayers, p)
+           end
+       end
+       _G.HubState.avoidTargets = targetPlayers
+   end,
+})
+
 
 -- PAGE 6: CÀI ĐẶT
 local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
@@ -862,8 +913,18 @@ SettingsTab:CreateButton({
                 Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName,
                 Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName,
                 Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
-                Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music
+                Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
+                Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList
             })
         end
     end,
+})
+
+local Btn_DeleteAll = SettingsTab:CreateButton({
+   Name = "Xóa Toàn Bộ GUI & Logic (Delete All)",
+   Callback = function()
+       if _G.HubLogic.DestroyAll then
+           _G.HubLogic.DestroyAll()
+       end
+   end,
 })
