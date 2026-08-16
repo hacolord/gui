@@ -1,5 +1,5 @@
 -- ======================================================================
--- PHẦN 2: GUI (NHÁNH 1)
+-- PHẦN 2: GUI (NHÁNH 1) - ĐÃ CẬP NHẬT URL SAFE LOAD AVOID
 -- ======================================================================
 
 local Rayfield = _G.HubState and _G.HubState.Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -10,7 +10,7 @@ local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 -- Khai báo Token GitHub Classic (ghp_)
-local token = "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" -- Thay token ghp_ của bạn vào đây
+local token = "🛑" -- Thay token ghp_ của bạn vào đây
 
 -- Khai báo hàm request đa năng hỗ trợ gửi Headers cho Executor
 local req = (syn and syn.request) or (http and http.request) or request or http_request
@@ -88,7 +88,7 @@ safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/K
 safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
 safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
 safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
-safeLoad("https://raw.githubusercontent.com/hacolord/avoid/refs/heads/main/avoid", "Avoid Module")
+safeLoad("https://raw.githubusercontent.com/hacolord/Avoid/refs/heads/main/Avoid", "Avoid Module")
 
 
 -- LOGIC XỬ LÝ ESP ITEM THEO THỜI GIAN THỰC TRONG WORKSHOP/ITEMS
