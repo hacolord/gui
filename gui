@@ -33,6 +33,12 @@ _G.HubState.flingPower = _G.HubState.flingPower or 1000000000
 _G.HubState.flingVelocity = _G.HubState.flingVelocity or 1000000000
 _G.HubState.isFlingActive = _G.HubState.isFlingActive or false
 
+-- Trạng thái mặc định cho Avoid System
+_G.HubState.isAvoidEnabled = _G.HubState.isAvoidEnabled or false
+_G.HubState.avoidRange = _G.HubState.avoidRange or 20
+_G.HubState.avoidTpDistance = _G.HubState.avoidTpDistance or 5
+_G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
+
 -- Bảng lưu trữ đối tượng ESP đang hoạt động
 local espItemCache = {}
 local espItemConnection = nil
@@ -739,6 +745,9 @@ Players.PlayerRemoving:Connect(function(player)
         _G.HubState.pinnedPlayers[player] = nil 
         if _G.HubLogic.UpdatePinnedOrder then _G.HubLogic.UpdatePinnedOrder() end
     end
+    if _G.HubState.avoidTargets and _G.HubState.avoidTargets[player] then
+        _G.HubState.avoidTargets[player] = nil
+    end
     if _G.HubState.selectedTargetPlayer == player then
         if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
             if _G.HubLogic.StopFlying then _G.HubLogic.StopFlying() end
@@ -873,14 +882,13 @@ Drop_AvoidList = MiscTab:CreateDropdown({
    MultipleOptions = true,
    Callback = function(Options)
        local selectedNames = type(Options) == "table" and Options or {Options}
-       local targetPlayers = {}
+       _G.HubState.avoidTargets = {}
        for _, nameStr in ipairs(selectedNames) do
            local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
            if p then
-               table.insert(targetPlayers, p)
+               _G.HubState.avoidTargets[p] = true
            end
        end
-       _G.HubState.avoidTargets = targetPlayers
    end,
 })
 
