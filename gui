@@ -9,7 +9,7 @@ local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
-local token = "🛑" -- Token GitHub Classic nếu cần
+local token = "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" -- Token GitHub Classic nếu cần
 local req = (syn and syn.request) or (http and http.request) or request or http_request
 
 _G.HubState = _G.HubState or {}
