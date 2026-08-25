@@ -5,6 +5,7 @@
 local Rayfield = _G.HubState and _G.HubState.Rayfield or loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local TeleportService = game:GetService("TeleportService")
 local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
@@ -533,7 +534,7 @@ local ToggleKBUI = OneShotTab:CreateToggle({
 })
 
 
--- PAGE 4: KILL ALL (CẬP NHẬT CHỈNH SỬA VÀ BỔ SUNG NÚT)
+-- PAGE 4: KILL ALL
 local KillAllTab = Window:CreateTab("Kill All", 4483362458)
 
 KillAllTab:CreateSection("-Main")
@@ -593,14 +594,12 @@ local Input_KillAllDist = KillAllTab:CreateInput({
 	Callback = function(Text) _G.HubState.killAll_TeleportDistance = tonumber(Text) or 1.5 end,
 })
 
--- Chỉnh sửa 3: Sửa chính tả "drowning" -> "trên" và thêm "dưới"
 local Drop_KillAllDir = KillAllTab:CreateDropdown({
 	Name = "Hướng", Options = {"trên", "dưới", "đằng sau", "đằng trước", "bên trái", "bên phait"},
 	CurrentOption = {_G.HubState.killAll_DirectionMode or "đằng sau"}, MultipleOptions = false,
 	Callback = function(Options) _G.HubState.killAll_DirectionMode = type(Options) == "table" and Options[1] or Options end,
 })
 
--- Chỉnh sửa 3: Nút bấm Vị trí ảo kiểu Input ở dưới cùng Kill All
 local Input_VirtualPos = KillAllTab:CreateInput({
    Name = "Vị trí ảo", PlaceholderText = "Ví dụ: 5", RemoveTextAfterFocusLost = false,
    Callback = function(Text) _G.HubState.killAll_VirtualOffset = tonumber(Text) or 0 end,
@@ -678,13 +677,14 @@ Players.PlayerRemoving:Connect(function(player)
     task.wait(0.5); updatePlayers()
 end)
 
-Players.PlayerAdded:Connect(function() task.wait(0.5); updatePlayers() end)
+Players.PlayerAdded:Connect(function(p)
+    task.wait(0.5); updatePlayers()
+end)
 
 
--- PAGE 6: MISC
+-- PAGE 6: MISC (BỔ SUNG VÀO CUỐI PHẦN SERVER ACCORDING TO REQUIREMENTS)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 
--- Bổ sung 4: Nút "Locked" ở phần đầu tiên của Misc
 MiscTab:CreateSection("-gui settings")
 local Toggle_LockedMiniGui = MiscTab:CreateToggle({
    Name = "Locked",
@@ -779,6 +779,42 @@ local Input_AvoidTpDist = MiscTab:CreateInput({
    end,
 })
 
+-- Bổ sung 2: Nút bấm và logic hệ thống Server nằm ở cuối Page Misc
+MiscTab:CreateSection("Server")
+
+local Input_ServerId = MiscTab:CreateInput({
+   Name = "Id Server",
+   PlaceholderText = "Nhập JobId hoặc Server ID...",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       _G.HubState.targetServerId = Text
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Join",
+   Callback = function()
+       local sId = _G.HubState.targetServerId
+       if sId and sId ~= "" then
+           pcall(function()
+               TeleportService:TeleportToPlaceInstance(game.PlaceId, sId, localPlayer)
+           end)
+       end
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Copy id",
+   Callback = function()
+       local currentJobId = game.JobId
+       if setclipboard then
+           setclipboard(tostring(currentJobId))
+       elseif syn and syn.write_clipboard then
+           syn.write_clipboard(tostring(currentJobId))
+       end
+   end,
+})
+
 
 -- PAGE 7: CÀI ĐẶT
 local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
@@ -805,12 +841,13 @@ SettingsTab:CreateButton({
                 Toggle_TouchFling = Toggle_TouchFling, Toggle_AntiFling = Toggle_AntiFling, Input_KillAllDelay = Input_KillAllDelay,
                 Input_KillAllFirstDead = Input_KillAllFirstDead, Input_KillAllLowHealth = Input_KillAllLowHealth,
                 Input_KillAllDist = Input_KillAllDist, Drop_KillAllDir = Drop_KillAllDir, PinnedDropdown = PinnedDropdown,
-                Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName,
+                Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName, Input_EspItemSource = Input_EspItemSource,
                 Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
                 Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
                 Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
                 Toggle_EspPlayer = Toggle_EspPlayer, Toggle_EspPlayerNameTag = Toggle_EspPlayerNameTag, Toggle_EspPlayerGlow = Toggle_EspPlayerGlow,
-                Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui
+                Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
+                Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId
             })
         end
     end,
