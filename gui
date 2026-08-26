@@ -589,6 +589,19 @@ local Input_KillAllLowHealth = KillAllTab:CreateInput({
 	Name = "Số người ưu tiên yếu máu", PlaceholderText = "Nhập số...", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_LowHealthCount = tonumber(Text) or 0 end,
 })
+
+-- Bổ sung 2: Input tốc độ bay tp & Dropdown cách di chuyển ngay bên dưới
+local Input_KillAllFlySpeed = KillAllTab:CreateInput({
+	Name = "tốc độ bay tp", PlaceholderText = "Mặc định: 300", RemoveTextAfterFocusLost = false,
+	Callback = function(Text) _G.HubState.killAll_FlySpeed = tonumber(Text) or 300 end,
+})
+
+local Drop_KillAllMoveMode = KillAllTab:CreateDropdown({
+	Name = "cách di chuyển", Options = {"Teleport", "Fly"},
+	CurrentOption = {_G.HubState.killAll_MoveMode or "Teleport"}, MultipleOptions = false,
+	Callback = function(Options) _G.HubState.killAll_MoveMode = type(Options) == "table" and Options[1] or Options end,
+})
+
 local Input_KillAllDist = KillAllTab:CreateInput({
 	Name = "Khoảng cách dịch chuyển", PlaceholderText = "Mặc định: 1.5", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_TeleportDistance = tonumber(Text) or 1.5 end,
@@ -608,7 +621,7 @@ local Input_VirtualPos = KillAllTab:CreateInput({
 
 -- PAGE 5: DANH SÁCH MỤC TIÊU
 local PlayerTab = Window:CreateTab("Danh Sách Mục Tiêu", 4483362458)
-local PlayerDropdown, PinnedDropdown, Drop_AvoidList
+local PlayerDropdown, PinnedDropdown, Drop_AvoidList, Drop_KillAllExceptions
 
 local function updatePlayers()
     local playerNames, nameToPlayer = {}, {}
@@ -623,6 +636,7 @@ local function updatePlayers()
     if PlayerDropdown then PlayerDropdown:Refresh(playerNames, true) end
     if PinnedDropdown then PinnedDropdown:Refresh(playerNames, true) end
     if Drop_AvoidList then Drop_AvoidList:Refresh(playerNames, true) end
+    if Drop_KillAllExceptions then Drop_KillAllExceptions:Refresh(playerNames, true) end
 end
 
 PlayerDropdown = PlayerTab:CreateDropdown({
@@ -668,6 +682,9 @@ Players.PlayerRemoving:Connect(function(player)
     end
     if _G.HubState.avoidTargets and _G.HubState.avoidTargets[player] then
         _G.HubState.avoidTargets[player] = nil
+    end
+    if _G.HubState.killAllExceptions and _G.HubState.killAllExceptions[player] then
+        _G.HubState.killAllExceptions[player] = nil
     end
     if _G.HubState.selectedTargetPlayer == player then
         if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
@@ -815,6 +832,44 @@ MiscTab:CreateButton({
    end,
 })
 
+-- Bổ sung 1: Các nút bấm dưới cùng page Misc
+MiscTab:CreateSection("Chức năng bổ sung")
+
+MiscTab:CreateButton({
+   Name = "Hủy bỏ chức năng",
+   Callback = function()
+       -- Dẫn sang tab Kill All
+       if Window and Window.SelectTab then
+           Window:SelectTab(KillAllTab)
+       end
+   end,
+})
+
+local Toggle_Exception = MiscTab:CreateToggle({
+   Name = "Ngoại lệ",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.isKillAllExceptionEnabled = Value
+   end,
+})
+
+Drop_KillAllExceptions = MiscTab:CreateDropdown({
+   Name = "Hủy Kill All",
+   Options = {},
+   CurrentOption = {},
+   MultipleOptions = true,
+   Callback = function(Options)
+       local selectedNames = type(Options) == "table" and Options or {Options}
+       _G.HubState.killAllExceptions = {}
+       for _, nameStr in ipairs(selectedNames) do
+           local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[nameStr]
+           if p then
+               _G.HubState.killAllExceptions[p] = true
+           end
+       end
+   end,
+})
+
 
 -- PAGE 7: CÀI ĐẶT
 local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
@@ -847,7 +902,9 @@ SettingsTab:CreateButton({
                 Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
                 Toggle_EspPlayer = Toggle_EspPlayer, Toggle_EspPlayerNameTag = Toggle_EspPlayerNameTag, Toggle_EspPlayerGlow = Toggle_EspPlayerGlow,
                 Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
-                Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId
+                Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
+                Input_KillAllFlySpeed = Input_KillAllFlySpeed, Drop_KillAllMoveMode = Drop_KillAllMoveMode,
+                Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions
             })
         end
     end,
