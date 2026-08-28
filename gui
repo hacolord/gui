@@ -10,7 +10,7 @@ local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
-local token = "🔴" -- Token GitHub Classic nếu cần
+local token = "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" -- Token GitHub Classic nếu cần
 local req = (syn and syn.request) or (http and http.request) or request or http_request
 
 _G.HubState = _G.HubState or {}
@@ -82,6 +82,7 @@ safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling
 safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
 safeLoad("https://raw.githubusercontent.com/hacolord/Avoid/refs/heads/main/Avoid", "Avoid Module")
 safeLoad("https://raw.githubusercontent.com/hacolord/esp/refs/heads/main/esp", "ESP Module (Player & Item)")
+safeLoad("https://raw.githubusercontent.com/hacolord/other-script/refs/heads/main/other%20script", "Others Module (Float & Auto TP)")
 
 -- 2. KHỞI TẠO CÁC MINI GUI DỰA TRÊN CẤU TRÚC GỐC
 local screenGui = Instance.new("ScreenGui")
@@ -158,7 +159,7 @@ local function makeDraggable(frame, handle)
     local dragging = false
     local dragInput, dragStart, startPos
     handle.InputBegan:Connect(function(input)
-        if _G.HubState.isMiniGuiLocked then return end -- Cấm kéo nếu chế độ Locked bật
+        if _G.HubState.isMiniGuiLocked then return end
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true; isDraggingWidget = false; dragStart = input.Position; startPos = frame.Position
             input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
@@ -217,7 +218,7 @@ flingBtn.MouseButton1Click:Connect(function()
     if not isDraggingWidget and _G.HubLogic.ToggleFling then _G.HubLogic.ToggleFling() end
 end)
 
--- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG: Combat > esp > OneShot > ...
+-- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG: Combat > esp > Void/Killbrick > ...
 local Window = Rayfield:CreateWindow({
    Name = "HỆ THỐNG ĐIỀU KHIỂN SẮP XẾP MỚI",
    LoadingTitle = "Đang Đồng Bộ Giao Diện...",
@@ -227,7 +228,7 @@ local Window = Rayfield:CreateWindow({
 })
 _G.HubState.RayfieldWindow = Window
 
--- PAGE 1: COMBAT (ĐỔI TÊN TỪ "bảng điều khiển")
+-- PAGE 1: COMBAT (ICON: HÌNH KIẾM 4483362458)
 local CombatTab = Window:CreateTab("Combat", 4483362458)
 
 CombatTab:CreateSection("-tracker toggle")
@@ -377,8 +378,8 @@ local Toggle_VisualServer = CombatTab:CreateToggle({
 })
 
 
--- PAGE 2: ESP (VỊ TRÍ MỚI: NẰM GIỮA COMBAT VÀ ONESHOT)
-local EspTab = Window:CreateTab("esp", 4483362458)
+-- PAGE 2: ESP (ICON: HÌNH MẮT/ESP 4384403532)
+local EspTab = Window:CreateTab("esp", 4384403532)
 
 -- ESP PLAYER SECTION
 EspTab:CreateSection("player")
@@ -467,8 +468,8 @@ local Input_EspItemSource = EspTab:CreateInput({
 })
 
 
--- PAGE 3: ONE SHOT
-local OneShotTab = Window:CreateTab("One Shot", 4483362458)
+-- PAGE 3: VOID/KILLBRICK (ĐỔI TÊN TỪ "Oneshot", ICON: HỘP SỌ 4384401019)
+local OneShotTab = Window:CreateTab("Void/Killbrick", 4384401019)
 
 OneShotTab:CreateSection("Checkers")
 OneShotTab:CreateButton({
@@ -534,7 +535,7 @@ local ToggleKBUI = OneShotTab:CreateToggle({
 })
 
 
--- PAGE 4: KILL ALL
+-- PAGE 4: KILL ALL (ICON: HÌNH MỤC TIÊU/KILL 4483362458)
 local KillAllTab = Window:CreateTab("Kill All", 4483362458)
 
 KillAllTab:CreateSection("-Main")
@@ -590,7 +591,6 @@ local Input_KillAllLowHealth = KillAllTab:CreateInput({
 	Callback = function(Text) _G.HubState.killAll_LowHealthCount = tonumber(Text) or 0 end,
 })
 
--- Bổ sung 2: Input tốc độ bay tp & Dropdown cách di chuyển ngay bên dưới
 local Input_KillAllFlySpeed = KillAllTab:CreateInput({
 	Name = "tốc độ bay tp", PlaceholderText = "Mặc định: 300", RemoveTextAfterFocusLost = false,
 	Callback = function(Text) _G.HubState.killAll_FlySpeed = tonumber(Text) or 300 end,
@@ -619,8 +619,8 @@ local Input_VirtualPos = KillAllTab:CreateInput({
 })
 
 
--- PAGE 5: DANH SÁCH MỤC TIÊU
-local PlayerTab = Window:CreateTab("Danh Sách Mục Tiêu", 4483362458)
+-- PAGE 5: DANH SÁCH MỤC TIÊU (ICON: NGHỆ DÂN/DANH SÁCH 4384401019)
+local PlayerTab = Window:CreateTab("Danh Sách Mục Tiêu", 4384401019)
 local PlayerDropdown, PinnedDropdown, Drop_AvoidList, Drop_KillAllExceptions
 
 local function updatePlayers()
@@ -699,8 +699,55 @@ Players.PlayerAdded:Connect(function(p)
 end)
 
 
--- PAGE 6: MISC (BỔ SUNG VÀO CUỐI PHẦN SERVER ACCORDING TO REQUIREMENTS)
-local MiscTab = Window:CreateTab("Misc", 4483362458)
+-- PAGE 6: OTHERS (NẰM ĐẰNG TRƯỚC MISC, ICON: HÌNH THỜI TRANG/KHÁC 4384401019)
+local OthersTab = Window:CreateTab("Others", 4384401019)
+
+OthersTab:CreateSection("gemini")
+local Toggle_AutoTp = OthersTab:CreateToggle({
+   Name = "auto tp",
+   CurrentValue = false,
+   Callback = function(Value)
+       if _G.HubLogic.ToggleAutoTpGui then
+           _G.HubLogic.ToggleAutoTpGui(Value)
+       end
+   end,
+})
+
+local Toggle_Float = OthersTab:CreateToggle({
+   Name = "float",
+   CurrentValue = false,
+   Callback = function(Value)
+       if _G.HubLogic.ToggleFloatGui then
+           _G.HubLogic.ToggleFloatGui(Value)
+       end
+   end,
+})
+
+OthersTab:CreateSection("Script hub")
+OthersTab:CreateButton({
+   Name = "Ghost universe",
+   Callback = function()
+       loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/Test4/main/GhostHub'))()
+   end,
+})
+
+OthersTab:CreateButton({
+   Name = "Synq jjs",
+   Callback = function()
+       loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/f0465c0000aaa63b0c3037c561a4ba9c.lua"))()
+   end,
+})
+
+OthersTab:CreateButton({
+   Name = "nigger jjs",
+   Callback = function()
+       loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/b7315589ba3b7854c382eeb676a81db2be0007dc1b449c60236e38c6cc1ee3b7/download"))()
+   end,
+})
+
+
+-- PAGE 7: MISC (ICON: HÌNH BÁNH RĂNG/KHÁC 4384401019)
+local MiscTab = Window:CreateTab("Misc", 4384401019)
 
 MiscTab:CreateSection("-gui settings")
 local Toggle_LockedMiniGui = MiscTab:CreateToggle({
@@ -796,7 +843,6 @@ local Input_AvoidTpDist = MiscTab:CreateInput({
    end,
 })
 
--- Bổ sung 2: Nút bấm và logic hệ thống Server nằm ở cuối Page Misc
 MiscTab:CreateSection("Server")
 
 local Input_ServerId = MiscTab:CreateInput({
@@ -832,18 +878,10 @@ MiscTab:CreateButton({
    end,
 })
 
--- Bổ sung 1: Các nút bấm dưới cùng page Misc
 MiscTab:CreateSection("Chức năng bổ sung")
 
-MiscTab:CreateButton({
-   Name = "Hủy bỏ chức năng",
-   Callback = function()
-       -- Dẫn sang tab Kill All
-       if Window and Window.SelectTab then
-           Window:SelectTab(KillAllTab)
-       end
-   end,
-})
+-- Đổi nút "Hủy bỏ chức năng" thành dạng tiêu đề / nhãn dán thay vì button
+MiscTab:CreateSection("Hủy bỏ chức năng")
 
 local Toggle_Exception = MiscTab:CreateToggle({
    Name = "Ngoại lệ",
@@ -871,8 +909,8 @@ Drop_KillAllExceptions = MiscTab:CreateDropdown({
 })
 
 
--- PAGE 7: CÀI ĐẶT
-local SettingsTab = Window:CreateTab("Cài đặt", 4483362458)
+-- PAGE 8: CÀI ĐẶT (ICON: CÀI ĐẶT 4384401019)
+local SettingsTab = Window:CreateTab("Cài đặt", 4384401019)
 SettingsTab:CreateSection("-cấu hình toàn bộ hệ thống")
 
 SettingsTab:CreateButton({
@@ -904,7 +942,8 @@ SettingsTab:CreateButton({
                 Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
                 Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
                 Input_KillAllFlySpeed = Input_KillAllFlySpeed, Drop_KillAllMoveMode = Drop_KillAllMoveMode,
-                Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions
+                Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions,
+                Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float
             })
         end
     end,
