@@ -10,7 +10,7 @@ local localPlayer = Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
-local token = "🔴" -- Token GitHub Classic nếu cần
+local token = "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" -- Token GitHub Classic nếu cần
 local req = (syn and syn.request) or (http and http.request) or request or http_request
 
 _G.HubState = _G.HubState or {}
@@ -759,9 +759,20 @@ local Toggle_LockedMiniGui = MiscTab:CreateToggle({
 })
 
 MiscTab:CreateSection("-music system")
+local Toggle_Music = MiscTab:CreateToggle({
+   Name = "music loop",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.HubState.isMusicEnabled = Value
+       if _G.HubLogic.ToggleMusic then
+           _G.HubLogic.ToggleMusic(Value)
+       end
+   end,
+})
+
 local Input_MusicID = MiscTab:CreateInput({
-   Name = "Music ID (Roblox Sound Asset)",
-   PlaceholderText = "Nhập ID (Ví dụ: 1848354536)...",
+   Name = "id sound",
+   PlaceholderText = "Nhập ID...",
    RemoveTextOnFocusLost = false,
    Callback = function(Text)
        _G.HubState.musicID = Text
@@ -771,13 +782,14 @@ local Input_MusicID = MiscTab:CreateInput({
    end,
 })
 
-local Toggle_Music = MiscTab:CreateToggle({
-   Name = "Phát Nhạc (Loop)",
-   CurrentValue = false,
-   Callback = function(Value)
-       _G.HubState.isMusicEnabled = Value
-       if _G.HubLogic.ToggleMusic then
-           _G.HubLogic.ToggleMusic(Value)
+local Input_MusicVolume = MiscTab:CreateInput({
+   Name = "âm lượng",
+   PlaceholderText = "Mặc định: 0.5",
+   RemoveTextOnFocusLost = false,
+   Callback = function(Text)
+       local vol = tonumber(Text) or 0.5
+       if _G.HubLogic.UpdateMusicVolume then
+           _G.HubLogic.UpdateMusicVolume(vol)
        end
    end,
 })
@@ -937,7 +949,7 @@ SettingsTab:CreateButton({
                 Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName, Input_EspItemSource = Input_EspItemSource,
                 Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
                 Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
-                Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
+                Input_MusicVolume = Input_MusicVolume, Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
                 Toggle_EspPlayer = Toggle_EspPlayer, Toggle_EspPlayerNameTag = Toggle_EspPlayerNameTag, Toggle_EspPlayerGlow = Toggle_EspPlayerGlow,
                 Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
                 Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
