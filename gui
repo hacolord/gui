@@ -1033,43 +1033,84 @@ task.spawn(function()
 
     -- PAGE 8: CÀI ĐẶT
     local SettingsTab = Window:CreateTab("Cài đặt", 4384401019)
-    SettingsTab:CreateSection("-cấu hình toàn bộ hệ thống")
+    
+    SettingsTab:CreateSection("save/load")
+
+    local getUIElementsTable = function()
+        return {
+            Input_Speed = Input_Speed, Input_Sides = Input_Sides, Input_Dist = Input_Dist,
+            Input_Height = Input_Height, Input_Chase = Input_Chase, Input_Pred = Input_Pred,
+            Input_Vel = Input_Vel, Drop_HeightMode = Drop_HeightMode, Drop_DirMode = Drop_DirMode,
+            Drop_NetMode = Drop_NetMode, Drop_CombatMode = Drop_CombatMode, Toggle_ClassicTracker = Toggle_ClassicTracker,
+            Toggle_NearTracker = Toggle_NearTracker, Toggle_OrangeFly = Toggle_OrangeFly, Toggle_PurpleFly = Toggle_PurpleFly,
+            Toggle_Noclip = Toggle_Noclip, Toggle_VisualServer = Toggle_VisualServer, InputStudsUI = InputStudsUI,
+            InputTimeUI = InputTimeUI, DropNgangUI = DropNgangUI, DropTrenUI = DropTrenUI,
+            ToggleVoidUI = ToggleVoidUI, ToggleKBUI = ToggleKBUI, Toggle_KillAllMiniVis = Toggle_KillAllMiniVis,
+            Toggle_TouchFling = Toggle_TouchFling, Toggle_AntiFling = Toggle_AntiFling, Input_KillAllDelay = Input_KillAllDelay,
+            Input_KillAllFirstDead = Input_KillAllFirstDead, Input_KillAllLowHealth = Input_KillAllLowHealth,
+            Input_KillAllDist = Input_KillAllDist, Drop_KillAllDir = Drop_KillAllDir, PinnedDropdown = PinnedDropdown,
+            Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName, Input_EspItemSource = Input_EspItemSource,
+            Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName, Input_EspNpcSource = Input_EspNpcSource,
+            Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
+            Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
+            Input_MusicVolume = Input_MusicVolume, Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
+            Toggle_EspPlayer = Toggle_EspPlayer, Toggle_EspPlayerNameTag = Toggle_EspPlayerNameTag, Toggle_EspPlayerGlow = Toggle_EspPlayerGlow,
+            Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
+            Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
+            Input_KillAllFlySpeed = Input_KillAllFlySpeed, Drop_KillAllMoveMode = Drop_KillAllMoveMode,
+            Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions,
+            Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float, Toggle_Punch = Toggle_Punch
+        }
+    end
 
     SettingsTab:CreateButton({
-       Name = "Lưu Toàn Bộ GUI (Save All)",
+       Name = "save",
        Callback = function() if _G.HubLogic.SaveAllConfig then _G.HubLogic.SaveAllConfig() end end,
     })
 
     SettingsTab:CreateButton({
-        Name = "Tải Lại Toàn Bộ GUI (Load All)",
+        Name = "load",
         Callback = function()
             if _G.HubLogic.LoadAllConfig then
-                _G.HubLogic.LoadAllConfig({
-                    Input_Speed = Input_Speed, Input_Sides = Input_Sides, Input_Dist = Input_Dist,
-                    Input_Height = Input_Height, Input_Chase = Input_Chase, Input_Pred = Input_Pred,
-                    Input_Vel = Input_Vel, Drop_HeightMode = Drop_HeightMode, Drop_DirMode = Drop_DirMode,
-                    Drop_NetMode = Drop_NetMode, Drop_CombatMode = Drop_CombatMode, Toggle_ClassicTracker = Toggle_ClassicTracker,
-                    Toggle_NearTracker = Toggle_NearTracker, Toggle_OrangeFly = Toggle_OrangeFly, Toggle_PurpleFly = Toggle_PurpleFly,
-                    Toggle_Noclip = Toggle_Noclip, Toggle_VisualServer = Toggle_VisualServer, InputStudsUI = InputStudsUI,
-                    InputTimeUI = InputTimeUI, DropNgangUI = DropNgangUI, DropTrenUI = DropTrenUI,
-                    ToggleVoidUI = ToggleVoidUI, ToggleKBUI = ToggleKBUI, Toggle_KillAllMiniVis = Toggle_KillAllMiniVis,
-                    Toggle_TouchFling = Toggle_TouchFling, Toggle_AntiFling = Toggle_AntiFling, Input_KillAllDelay = Input_KillAllDelay,
-                    Input_KillAllFirstDead = Input_KillAllFirstDead, Input_KillAllLowHealth = Input_KillAllLowHealth,
-                    Input_KillAllDist = Input_KillAllDist, Drop_KillAllDir = Drop_KillAllDir, PinnedDropdown = PinnedDropdown,
-                    Toggle_EspItem = Toggle_EspItem, Toggle_EspItemGlow = Toggle_EspItemGlow, Toggle_EspItemName = Toggle_EspItemName, Input_EspItemSource = Input_EspItemSource,
-                    Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName, Input_EspNpcSource = Input_EspNpcSource,
-                    Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
-                    Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
-                    Input_MusicVolume = Input_MusicVolume, Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
-                    Toggle_EspPlayer = Toggle_EspPlayer, Toggle_EspPlayerNameTag = Toggle_EspPlayerNameTag, Toggle_EspPlayerGlow = Toggle_EspPlayerGlow,
-                    Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
-                    Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
-                    Input_KillAllFlySpeed = Input_KillAllFlySpeed, Drop_KillAllMoveMode = Drop_KillAllMoveMode,
-                    Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions,
-                    Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float, Toggle_Punch = Toggle_Punch
-                })
+                _G.HubLogic.LoadAllConfig(getUIElementsTable())
             end
         end,
+    })
+
+    SettingsTab:CreateSection("id setting")
+
+    local Input_SettingID = SettingsTab:CreateInput({
+       Name = "id",
+       PlaceholderText = "Nhập ID setting...",
+       RemoveTextOnFocusLost = false,
+       Callback = function(Text)
+           _G.HubState.targetSettingId = Text
+       end,
+    })
+
+    SettingsTab:CreateButton({
+       Name = "load id setting",
+       Callback = function()
+           if _G.HubLogic.LoadConfigFromID then
+               _G.HubLogic.LoadConfigFromID(_G.HubState.targetSettingId, getUIElementsTable())
+           end
+       end,
+    })
+
+    SettingsTab:CreateButton({
+       Name = "copy id setting",
+       Callback = function()
+           if _G.HubLogic.GetConfigID then
+               local id = _G.HubLogic.GetConfigID()
+               if id and id ~= "" then
+                   if setclipboard then
+                       setclipboard(id)
+                   elseif syn and syn.write_clipboard then
+                       syn.write_clipboard(id)
+                   end
+               end
+           end
+       end,
     })
 
     local Btn_DeleteAll = SettingsTab:CreateButton({
