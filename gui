@@ -232,9 +232,9 @@ task.spawn(function()
 
     -- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG
     local Window = Rayfield:CreateWindow({
-       Name = "HỆ THỐNG ĐIỀU KHIỂN SẮP XẾP MỚI",
-       LoadingTitle = "Đang Đồng Bộ Giao Diện...",
-       LoadingSubtitle = "Vui lòng chờ giây lát",
+       Name = "QUÂN FEMBOY",
+       LoadingTitle = "Đợi Đi Ỉa",
+       LoadingSubtitle = "Vui lòng chờ quân lọ",
        ConfigurationSaving = { Enabled = false },
        Discord = { Enabled = false },
        KeySystem = false
