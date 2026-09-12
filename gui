@@ -232,7 +232,7 @@ task.spawn(function()
 
     -- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG
     local Window = Rayfield:CreateWindow({
-       Name = "QUÂN FEMBOY",
+       Name = "ĐANG ỈA ĐỪNG LÀM PHIỀN",
        LoadingTitle = "Đợi Đi Ỉa",
        LoadingSubtitle = "Vui lòng chờ quân lọ",
        ConfigurationSaving = { Enabled = false },
