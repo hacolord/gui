@@ -19,6 +19,7 @@ task.spawn(function()
     local localPlayer = Players.LocalPlayer
     local playerGui = localPlayer:WaitForChild("PlayerGui")
     local UIS = game:GetService("UserInputService")
+    local ProximityPromptService = game:GetService("ProximityPromptService")
 
     local token = "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" -- Token GitHub Classic nếu cần
     local req = (syn and syn.request) or (http and http.request) or request or http_request
@@ -44,6 +45,13 @@ task.spawn(function()
     _G.HubState.avoidTpDistance = _G.HubState.avoidTpDistance or 5
     _G.HubState.avoidMode = _G.HubState.avoidMode or 1
     _G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
+
+    -- Trạng thái Avoid 0.2
+    _G.HubState.isAvoid02Enabled = _G.HubState.isAvoid02Enabled or false
+
+    -- Trạng thái Target Submenu (Page Target)
+    _G.HubState.targetSubPlayer = _G.HubState.targetSubPlayer or nil
+    _G.HubState.isTargetViewEnabled = _G.HubState.isTargetViewEnabled or false
 
     -- Load external modules bất đồng bộ để tránh nghẽn luồng tạo GUI
     local function safeLoad(url, name)
@@ -703,7 +711,7 @@ task.spawn(function()
 
     -- PAGE 5: DANH SÁCH MỤC TIÊU
     local PlayerTab = Window:CreateTab("Danh Sách Mục Tiêu", 4384401019)
-    local PlayerDropdown, PinnedDropdown, Drop_AvoidList, Drop_KillAllExceptions
+    local PlayerDropdown, PinnedDropdown, TargetSubDropdown, Drop_AvoidList, Drop_KillAllExceptions
 
     local function updatePlayers()
         local playerNames, nameToPlayer = {}, {}
@@ -720,6 +728,7 @@ task.spawn(function()
         pcall(function()
             if PlayerDropdown and PlayerDropdown.Refresh then PlayerDropdown:Refresh(playerNames, true) end
             if PinnedDropdown and PinnedDropdown.Refresh then PinnedDropdown:Refresh(playerNames, true) end
+            if TargetSubDropdown and TargetSubDropdown.Refresh then TargetSubDropdown:Refresh(playerNames, true) end
             if Drop_AvoidList and Drop_AvoidList.Refresh then Drop_AvoidList:Refresh(playerNames, true) end
             if Drop_KillAllExceptions and Drop_KillAllExceptions.Refresh then Drop_KillAllExceptions:Refresh(playerNames, true) end
         end)
@@ -762,6 +771,79 @@ task.spawn(function()
 
     PlayerTab:CreateButton({ Name = "Làm mới danh sách (Refresh)", Callback = updatePlayers })
 
+    -- BỔ SUNG MÔ PHỎNG MỚI: "danh sách người chơi" > "target" > "others"
+    PlayerTab:CreateSection("danh sách người chơi")
+    PlayerTab:CreateSection("target")
+
+    TargetSubDropdown = PlayerTab:CreateDropdown({
+       Name = "player",
+       Options = {"Đang tải..."},
+       CurrentOption = {""},
+       MultipleOptions = false,
+       Flag = "TargetSubDropdown_Flag",
+       Callback = function(Option)
+           local targetName = type(Option) == "table" and Option[1] or Option
+           local p = _G.HubState.nameToPlayer and _G.HubState.nameToPlayer[targetName]
+           if p then
+               _G.HubState.targetSubPlayer = p
+           end
+       end,
+    })
+
+    PlayerTab:CreateButton({
+       Name = "teleport",
+       Callback = function()
+           local targetP = _G.HubState.targetSubPlayer
+           if targetP and targetP.Character and targetP.Character:FindFirstChild("HumanoidRootPart") then
+               local myChar = localPlayer.Character
+               if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                   local targetHRP = targetP.Character.HumanoidRootPart
+                   myChar.HumanoidRootPart.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 0.01)
+               end
+           end
+       end,
+    })
+
+    local Toggle_TargetView = PlayerTab:CreateToggle({
+       Name = "view",
+       CurrentValue = false,
+       Flag = "Toggle_TargetView_Flag",
+       Callback = function(Value)
+           _G.HubState.isTargetViewEnabled = Value
+           local Camera = Workspace.CurrentCamera
+           if Value then
+               task.spawn(function()
+                   while _G.HubState.isTargetViewEnabled do
+                       local targetP = _G.HubState.targetSubPlayer
+                       if targetP and targetP.Character and targetP.Character:FindFirstChild("Head") then
+                           Camera.CameraSubject = targetP.Character.Head
+                       end
+                       task.wait(0.1)
+                   end
+                   if localPlayer.Character and localPlayer.Character:FindFirstChild("Head") then
+                       Camera.CameraSubject = localPlayer.Character.Head
+                   end
+               end)
+           else
+               if localPlayer.Character and localPlayer.Character:FindFirstChild("Head") then
+                   Camera.CameraSubject = localPlayer.Character.Head
+               end
+           end
+       end,
+    })
+
+    PlayerTab:CreateSection("others")
+
+    -- VÒNG LẶP QUÉT TỰ ĐỘNG DANH SÁCH NGƯỜI CHƠI BẤT ĐỒNG BỘ 5 SÂY / 1 LẦN
+    task.spawn(function()
+        while true do
+            task.wait(5)
+            pcall(function()
+                updatePlayers()
+            end)
+        end
+    end)
+
     Players.PlayerRemoving:Connect(function(player)
         if _G.HubState.pinnedPlayers and _G.HubState.pinnedPlayers[player] then 
             _G.HubState.pinnedPlayers[player] = nil 
@@ -772,6 +854,9 @@ task.spawn(function()
         end
         if _G.HubState.killAllExceptions and _G.HubState.killAllExceptions[player] then
             _G.HubState.killAllExceptions[player] = nil
+        end
+        if _G.HubState.targetSubPlayer == player then
+            _G.HubState.targetSubPlayer = nil
         end
         if _G.HubState.selectedTargetPlayer == player then
             if not (_G.HubState.isClassicTrackingActive and ((_G.HubState.tanSatMode == 1 or _G.HubState.tanSatMode == 3) or (_G.HubLogic.HasPinnedPlayers and _G.HubLogic.HasPinnedPlayers()))) then 
@@ -825,6 +910,53 @@ task.spawn(function()
            end
        end,
     })
+
+    -- BỔ SUNG MỚI: NÚT AVOID 0.2 BÊN DƯỚI NÚT PUNCH
+    local Toggle_Avoid02 = OthersTab:CreateToggle({
+       Name = "avoid 0.2",
+       CurrentValue = false,
+       Flag = "Toggle_Avoid02_Flag",
+       Callback = function(Value)
+           _G.HubState.isAvoid02Enabled = Value
+       end,
+    })
+
+    -- LOGIC CỦA "avoid 0.2" KIỂM TRA MỖI 0.5s/LẦN BẤT ĐỒNG BỘ
+    task.spawn(function()
+        while true do
+            task.wait(0.5)
+            if _G.HubState.isAvoid02Enabled then
+                pcall(function()
+                    local effects = Workspace:FindFirstChild("Effects")
+                    if effects and effects:FindFirstChild("FlashDomain") then
+                        local myChar = localPlayer.Character
+                        if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                            myChar.HumanoidRootPart.CFrame = CFrame.new(66.17, -28.83, -284.21)
+                        end
+
+                        if _G.HubLogic.StopFlying then
+                            _G.HubLogic.StopFlying()
+                        end
+                        _G.HubState.isClassicTrackingActive = false
+                        _G.HubState.isNearTrackingActive = false
+
+                        task.delay(5, function()
+                            pcall(function()
+                                ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
+                                    fireproximityprompt(prompt)
+                                end)
+                                for _, prompt in ipairs(Workspace:GetDescendants()) do
+                                    if prompt:IsA("ProximityPrompt") then
+                                        prompt.HoldDuration = 0
+                                    end
+                                end
+                            end)
+                        end)
+                    end
+                end)
+            end
+        end
+    end)
 
     OthersTab:CreateSection("Script hub")
     OthersTab:CreateButton({
@@ -1059,7 +1191,8 @@ task.spawn(function()
             Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
             Input_KillAllFlySpeed = Input_KillAllFlySpeed, Drop_KillAllMoveMode = Drop_KillAllMoveMode,
             Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions,
-            Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float, Toggle_Punch = Toggle_Punch
+            Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float, Toggle_Punch = Toggle_Punch,
+            Toggle_Avoid02 = Toggle_Avoid02, TargetSubDropdown = TargetSubDropdown, Toggle_TargetView = Toggle_TargetView
         }
     end
 
