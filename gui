@@ -1161,7 +1161,7 @@ task.spawn(function()
            if _G.HubLogic.GetConfigID then
                local id = _G.HubLogic.GetConfigID()
                if id and id ~= "" then
-                   if setclipboard me then
+                   if setclipboard then
                        setclipboard(id)
                    elseif syn and syn.write_clipboard then
                        syn.write_clipboard(id)
