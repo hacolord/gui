@@ -968,6 +968,17 @@ task.spawn(function()
        end,
     })
 
+    local Toggle_Avoid02 = MiscTab:CreateToggle({
+       Name = "avoid 0.2",
+       CurrentValue = false,
+       Flag = "Toggle_Avoid02_Flag",
+       Callback = function(Value)
+           if _G.HubLogic.ToggleAvoid02 then
+               _G.HubLogic.ToggleAvoid02(Value)
+           end
+       end,
+    })
+
     local Input_AvoidRange = MiscTab:CreateInput({
        Name = "phạm vi avoid",
        PlaceholderText = "Mặc định: 20",
@@ -1110,7 +1121,7 @@ task.spawn(function()
             Toggle_EspNpc = Toggle_EspNpc, Toggle_EspNpcGlow = Toggle_EspNpcGlow, Toggle_EspNpcName = Toggle_EspNpcName, Input_EspNpcSource = Input_EspNpcSource,
             Toggle_FlingMiniVis = Toggle_FlingMiniVis, Input_FlingTime = Input_FlingTime, Input_FlingPower = Input_FlingPower,
             Input_FlingVel = Input_FlingVel, Input_MusicID = Input_MusicID, Toggle_Music = Toggle_Music,
-            Input_MusicVolume = Input_MusicVolume, Toggle_Avoid = Toggle_Avoid, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
+            Input_MusicVolume = Input_MusicVolume, Toggle_Avoid = Toggle_Avoid, Toggle_Avoid02 = Toggle_Avoid02, Input_AvoidRange = Input_AvoidRange, Drop_AvoidMode = Drop_AvoidMode, Input_AvoidTpDist = Input_AvoidTpDist, Drop_AvoidList = Drop_AvoidList,
             Toggle_EspPlayer = Toggle_EspPlayer, Toggle_EspPlayerNameTag = Toggle_EspPlayerNameTag, Toggle_EspPlayerGlow = Toggle_EspPlayerGlow,
             Toggle_EspPlayerDistance = Toggle_EspPlayerDistance, Toggle_EspPlayerTeamCheck = Toggle_EspPlayerTeamCheck, Toggle_LockedMiniGui = Toggle_LockedMiniGui,
             Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
