@@ -1111,23 +1111,25 @@ task.spawn(function()
        end,
     })
 
-    -- MO PHONG: "misc" > "update" > "setting"
-    -- PAGE UPDATE VÀ 10 Ô GHI CHÚ ĐẶT Ở CÁC DÒNG GẦN NHAU
-    MiscTab:CreateSection("update")
 
-    local Note_Update_1 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật v1.0: Thêm tính năng Anti Void tự động bảo vệ."})
-    local Note_Update_2 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật v1.1: Tối ưu hoá logic dịch chuyển cơ thể sang Void."})
-    local Note_Update_3 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật v1.2: Bổ sung 10 ô ghi chú nằm trong Misc > Update."})
-    local Note_Update_4 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật v1.3: Sửa lỗi tự động gán FallenPartsDestroyHeight."})
-    local Note_Update_5 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật v1.4: Nâng cấp hệ thống ESP Player & NPC."})
-    local Note_Update_6 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật v1.5: Đồng bộ hóa cấu trúc Rayfield Window và MiniGUI."})
-    local Note_Update_7 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 7", Content = "Cập nhật v1.6: Tăng tốc độ phản hồi tính năng Fling & Tracker."})
-    local Note_Update_8 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 8", Content = "Cập nhật v1.7: Hỗ trợ lưu và khôi phục ID Setting cá nhân."})
-    local Note_Update_9 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 9", Content = "Cập nhật v1.8: Hoàn thiện logic Kill All và danh sách ngoại lệ."})
-    local Note_Update_10 = MiscTab:CreateParagraph({Title = "Ghi chú cập nhật 10", Content = "Cập nhật v1.9: Kiểm tra tính ổn định tổng thể của Hub."})
+    -- PAGE 9: UPDATE (TAB ĐỘC LẬP MỚI)
+    local UpdateTab = Window:CreateTab("Update", 4384401019)
+
+    UpdateTab:CreateSection("update")
+
+    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật v1.0: Thêm tính năng Anti Void tự động bảo vệ."})
+    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật v1.1: Tối ưu hoá logic dịch chuyển cơ thể sang Void."})
+    local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật v1.2: Bổ sung 10 ô ghi chú nằm trong Misc > Update."})
+    local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật v1.3: Sửa lỗi tự động gán FallenPartsDestroyHeight."})
+    local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật v1.4: Nâng cấp hệ thống ESP Player & NPC."})
+    local Note_Update_6 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật v1.5: Đồng bộ hóa cấu trúc Rayfield Window và MiniGUI."})
+    local Note_Update_7 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 7", Content = "Cập nhật v1.6: Tăng tốc độ phản hồi tính năng Fling & Tracker."})
+    local Note_Update_8 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 8", Content = "Cập nhật v1.7: Hỗ trợ lưu và khôi phục ID Setting cá nhân."})
+    local Note_Update_9 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 9", Content = "Cập nhật v1.8: Hoàn thiện logic Kill All và danh sách ngoại lệ."})
+    local Note_Update_10 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 10", Content = "Cập nhật v1.9: Kiểm tra tính ổn định tổng thể của Hub."})
 
 
-    -- PAGE 9: CÀI ĐẶT
+    -- PAGE 10: CÀI ĐẶT
     local SettingsTab = Window:CreateTab("Cài đặt", 4384401019)
     
     SettingsTab:CreateSection("save/load")
