@@ -232,8 +232,8 @@ task.spawn(function()
 
     -- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG
     local Window = Rayfield:CreateWindow({
-       Name = "QUÂN FEMBOY",
-       LoadingTitle = "Đợi Đi Ỉa",
+       Name = "HIẾU FURRY",
+       LoadingTitle = "MAI CÓ AIMBOT",
        LoadingSubtitle = "Vui lòng chờ quân lọ",
        ConfigurationSaving = { Enabled = false },
        Discord = { Enabled = false },
@@ -1117,16 +1117,16 @@ task.spawn(function()
 
     UpdateTab:CreateSection("update")
 
-    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật v1.0: Thêm tính năng Anti Void tự động bảo vệ."})
-    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật v1.1: Tối ưu hoá logic dịch chuyển cơ thể sang Void."})
-    local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật v1.2: Bổ sung 10 ô ghi chú nằm trong Misc > Update."})
-    local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật v1.3: Sửa lỗi tự động gán FallenPartsDestroyHeight."})
-    local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật v1.4: Nâng cấp hệ thống ESP Player & NPC."})
-    local Note_Update_6 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật v1.5: Đồng bộ hóa cấu trúc Rayfield Window và MiniGUI."})
-    local Note_Update_7 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 7", Content = "Cập nhật v1.6: Tăng tốc độ phản hồi tính năng Fling & Tracker."})
-    local Note_Update_8 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 8", Content = "Cập nhật v1.7: Hỗ trợ lưu và khôi phục ID Setting cá nhân."})
-    local Note_Update_9 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 9", Content = "Cập nhật v1.8: Hoàn thiện logic Kill All và danh sách ngoại lệ."})
-    local Note_Update_10 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 10", Content = "Cập nhật v1.9: Kiểm tra tính ổn định tổng thể của Hub."})
+    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck cho hiếu furry"})
+    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Thêm tab update với 10 ô ghi chú"})
+    local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật 3: Sửa lỗi Workspace.npc trong esp"})
+    local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật 4: ."})
+    local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật 5: ."})
+    local Note_Update_6 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật 6: ."})
+    local Note_Update_7 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 7", Content = "Cập nhật 7: ."})
+    local Note_Update_8 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 8", Content = "Cập nhật 8: ."})
+    local Note_Update_9 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 9", Content = "Cập nhật 9: ."})
+    local Note_Update_10 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 10", Content = "Cập nhật 10: ."})
 
 
     -- PAGE 10: CÀI ĐẶT
