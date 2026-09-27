@@ -388,7 +388,7 @@ task.spawn(function()
        Callback = function(Text) _G.HubState._G_predCoeffValue = tonumber(Text) or 1 end,
     })
     local Input_Vel = CombatTab:CreateInput({
-       Name = "vận tốc prediction", PlaceholderText = "2", RemoveTextAfterFocusLost = false,
+       Name = "vận tốc prediction", PlaceholderText = "2", RemoveTextOnFocusLost = false,
        Callback = function(Text) _G.HubState._G_velCheckValue = tonumber(Text) or 2 end,
     })
 
@@ -754,10 +754,28 @@ task.spawn(function()
     	Callback = function(Options) _G.HubState.killAll_DirectionMode = type(Options) == "table" and Options[1] or Options end,
     })
 
+    -- ===== [ CHỈNH SỬA VỊ TRÍ ẢO: DỊCH CHUYỂN ĐÓN ĐẦU ĐẾN VỊ TRÍ ẢO VÀ LÚC NÀO CŨNG NHÌN VÀO ĐÓ ] =====
     local Input_VirtualPos = KillAllTab:CreateInput({
        Name = "Vị trí ảo", PlaceholderText = "Ví dụ: 5", RemoveTextOnFocusLost = false,
-       Callback = function(Text) _G.HubState.killAll_VirtualOffset = tonumber(Text) or 0 end,
+       Callback = function(Text)
+           local offsetVal = tonumber(Text) or 0
+           _G.HubState.killAll_VirtualOffset = offsetVal
+       end,
     })
+
+    -- Đón đầu vị trí kẻ địch kết hợp nhìn vào mục tiêu
+    _G.HubLogic.GetPredictiveVirtualCFrame = function(targetHRP)
+        if not targetHRP then return CFrame.new() end
+        local distOffset = _G.HubState.killAll_VirtualOffset or 0
+        local targetVel = targetHRP.AssemblyLinearVelocity or Vector3.new(0, 0, 0)
+        
+        -- Tính toán vị trí đón đầu kẻ thù dựa trên hướng di chuyển hiện tại
+        local moveDir = targetVel.Magnitude > 0.1 and targetVel.Unit or targetHRP.CFrame.LookVector
+        local predictedTargetPos = targetHRP.Position + (moveDir * distOffset)
+        
+        -- Dịch chuyển nhân vật đến trước vị trí ảo đồng thời xoay nhân vật nhìn thẳng vào kẻ thù
+        return CFrame.new(predictedTargetPos, targetHRP.Position)
+    end
 
 
     -- PAGE 6: DANH SÁCH MỤC TIÊU
@@ -783,6 +801,10 @@ task.spawn(function()
             if Drop_AvoidList and Drop_AvoidList.Refresh then Drop_AvoidList:Refresh(playerNames, true) end
             if Drop_KillAllExceptions and Drop_KillAllExceptions.Refresh then Drop_KillAllExceptions:Refresh(playerNames, true) end
         end)
+    end
+
+    _G.HubLogic.UpdatePlayerListManual = function()
+        updatePlayers()
     end
 
     PlayerDropdown = PlayerTab:CreateDropdown({
@@ -848,11 +870,10 @@ task.spawn(function()
         task.wait(0.5); updatePlayers()
     end)
 
-    -- TỰ ĐỘNG QUÉT DANH SÁCH NGƯỜI CHƠI 5S/1 LẦN
+    -- ĐÃ FIX LAG: LOẠI BỎ HOÀN TOÀN VÒNG LẶP TỰ ĐỘNG QUÉT DƯỚI ĐÂY
+    -- Dữ liệu danh sách người chơi sẽ chỉ cập nhật khi bấm nút thủ công "quét danh sách người chơi" hoặc khi có người chơi Join/Leave.
     task.spawn(function()
-        while task.wait(5) do
-            pcall(updatePlayers)
-        end
+        updatePlayers()
     end)
 
 
@@ -929,6 +950,19 @@ task.spawn(function()
        Flag = "Toggle_LockedMiniGui_Flag",
        Callback = function(Value)
            _G.HubState.isMiniGuiLocked = Value
+       end,
+    })
+
+    -- ===== [ NHÁNH FIX LAG: CẤU TRÚC VỊ TRÍ "misc" > "fix lag" > "update" > "setting" ] =====
+    MiscTab:CreateSection("fix lag")
+    MiscTab:CreateButton({
+       Name = "quét danh sách người chơi",
+       Callback = function()
+           if _G.HubLogic.UpdatePlayerListManual then
+               _G.HubLogic.UpdatePlayerListManual()
+           else
+               updatePlayers()
+           end
        end,
     })
 
@@ -1112,7 +1146,7 @@ task.spawn(function()
     })
 
 
-    -- PAGE 9: UPDATE (TAB ĐỘC LẬP MỚI)
+    -- PAGE 9: UPDATE (TAB ĐỘC LẬP MỚI DÀNH CHO FIX LAG & CẬP NHẬT)
     local UpdateTab = Window:CreateTab("Update", 4384401019)
 
     UpdateTab:CreateSection("update")
@@ -1120,9 +1154,9 @@ task.spawn(function()
     local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck cho hiếu furry"})
     local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Thêm tab update với 10 ô ghi chú"})
     local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật 3: Sửa lỗi Workspace.npc trong esp"})
-    local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật 4: ."})
-    local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật 5: ."})
-    local Note_Update_6 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật 6: ."})
+    local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật 4: Tối ưu chống lag, loại bỏ vòng lặp 5s tự quét người chơi. Thêm nút quét thủ công."})
+    local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật 5: Cập nhật vị trí ảo Kill All - dịch chuyển đón đầu trước kẻ thù và hướng mặt nhìn thẳng."})
+    local Note_Update_6 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật 6: Khôi phục và nâng cấp ESP NPC hoạt động chính xác với màu Highlights đỏ."})
     local Note_Update_7 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 7", Content = "Cập nhật 7: ."})
     local Note_Update_8 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 8", Content = "Cập nhật 8: ."})
     local Note_Update_9 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 9", Content = "Cập nhật 9: ."})
@@ -1157,73 +1191,6 @@ task.spawn(function()
             Input_VirtualPos = Input_VirtualPos, Input_ServerId = Input_ServerId,
             Input_KillAllFlySpeed = Input_KillAllFlySpeed, Drop_KillAllMoveMode = Drop_KillAllMoveMode,
             Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions,
-            Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float, Toggle_Punch = Toggle_Punch,
-            TargetPlayerDropdown = TargetPlayerDropdown, Toggle_ViewTarget = Toggle_ViewTarget,
-            Toggle_AntiVoid = Toggle_AntiVoid
         }
     end
-
-    SettingsTab:CreateButton({
-       Name = "save",
-       Callback = function() if _G.HubLogic.SaveAllConfig then _G.HubLogic.SaveAllConfig() end end,
-    })
-
-    SettingsTab:CreateButton({
-        Name = "load",
-        Callback = function()
-            if _G.HubLogic.LoadAllConfig then
-                _G.HubLogic.LoadAllConfig(getUIElementsTable())
-            end
-        end,
-    })
-
-    SettingsTab:CreateSection("id setting")
-
-    local Input_SettingID = SettingsTab:CreateInput({
-       Name = "id",
-       PlaceholderText = "Nhập ID setting...",
-       RemoveTextOnFocusLost = false,
-       Callback = function(Text)
-           _G.HubState.targetSettingId = Text
-       end,
-    })
-
-    SettingsTab:CreateButton({
-       Name = "load id setting",
-       Callback = function()
-           if _G.HubLogic.LoadConfigFromID then
-               _G.HubLogic.LoadConfigFromID(_G.HubState.targetSettingId, getUIElementsTable())
-           end
-       end,
-    })
-
-    SettingsTab:CreateButton({
-       Name = "copy id setting",
-       Callback = function()
-           if _G.HubLogic.GetConfigID then
-               local id = _G.HubLogic.GetConfigID()
-               if id and id ~= "" then
-                   if setclipboard then
-                       setclipboard(id)
-                   elseif syn and syn.write_clipboard then
-                       syn.write_clipboard(id)
-                   end
-               end
-           end
-       end,
-    })
-
-    local Btn_DeleteAll = SettingsTab:CreateButton({
-       Name = "Xóa Toàn Bộ GUI & Logic (Delete All)",
-       Callback = function()
-           if _G.HubLogic.DestroyAll then
-               _G.HubLogic.DestroyAll()
-           end
-       end,
-    })
-
-    -- Cập nhật lại danh sách người chơi sau khi toàn bộ GUI đã khởi tạo xong
-    task.wait(0.2)
-    updatePlayers()
-    print("[SUCCESS]: Đã bổ sung tab target và hoàn tất đồng bộ GUI!")
 end)
