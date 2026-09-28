@@ -20,7 +20,7 @@ task.spawn(function()
     local playerGui = localPlayer:WaitForChild("PlayerGui")
     local UIS = game:GetService("UserInputService")
 
-    local token = "🔴" -- Token GitHub Classic nếu cần
+    local token = "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" -- Token GitHub Classic nếu cần
     local req = (syn and syn.request) or (http and http.request) or request or http_request
 
     _G.HubState = _G.HubState or {}
@@ -79,6 +79,19 @@ task.spawn(function()
             end
         end)
     end
+
+    -- TẢI CÁC MODULE BÊN NGOÀI BẠN CUNG CẤP VÀ NGUỒN ESP CHUNG MỚI
+    safeLoad("https://raw.githubusercontent.com/hacolord/target/refs/heads/main/target", "Target Module")
+    safeLoad("https://raw.githubusercontent.com/hacolord/Tracker/refs/heads/Tracker/Tracker", "Nhánh 3 (Tracker)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Nhánh 4 (Void)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/auto-tp-2/refs/heads/main/Kill%20All", "Nhánh 5 (Kill All)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
+    safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
+    safeLoad("https://raw.githubusercontent.com/hacolord/Avoid/refs/heads/main/Avoid", "Avoid Module")
+    safeLoad("https://raw.githubusercontent.com/hacolord/esp/refs/heads/main/esp", "ESP Module (Player & Item)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/other-script/refs/heads/main/other%20script", "Others Module (Float & Auto TP)")
+
     -- 2. KHỞI TẠO CÁC MINI GUI DỰA TRÊN CẤU TRÚC GỐC
     local oldGui = playerGui:FindFirstChild("TargetFlyMiniGuiSystem")
     if oldGui then oldGui:Destroy() end
@@ -219,9 +232,9 @@ task.spawn(function()
 
     -- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG
     local Window = Rayfield:CreateWindow({
-       Name = "NHỚ LÀM HỘ AIMBOT",
-       LoadingTitle = "AI ĐỌC BỊ GAY",
-       LoadingSubtitle = "Vui lòng chờ lọ",
+       Name = "HIẾU FURRY",
+       LoadingTitle = "MAI CÓ AIMBOT",
+       LoadingSubtitle = "Vui lòng chờ quân lọ",
        ConfigurationSaving = { Enabled = false },
        Discord = { Enabled = false },
        KeySystem = false
@@ -1104,7 +1117,7 @@ task.spawn(function()
 
     UpdateTab:CreateSection("update")
 
-    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck"})
+    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck cho hiếu furry"})
     local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Thêm tab update với 10 ô ghi chú"})
     local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật 3: Sửa lỗi Workspace.npc trong esp"})
     local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật 4: ."})
