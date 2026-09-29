@@ -20,7 +20,7 @@ task.spawn(function()
     local playerGui = localPlayer:WaitForChild("PlayerGui")
     local UIS = game:GetService("UserInputService")
 
-    local token = "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" -- Token GitHub Classic nếu cần
+    local token = "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" -- Token GitHub Classic nếu cần
     local req = (syn and syn.request) or (http and http.request) or request or http_request
 
     _G.HubState = _G.HubState or {}
