@@ -232,9 +232,9 @@ task.spawn(function()
 
     -- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG
     local Window = Rayfield:CreateWindow({
-       Name = "HIẾU FURRY",
-       LoadingTitle = "MAI CÓ AIMBOT",
-       LoadingSubtitle = "Vui lòng chờ quân lọ",
+       Name = "CHAN BỐ MÀY ĐÊ",
+       LoadingTitle = "🤑😭👍🔴💔🤔🤡🤓👽📷😏😂🤯💀🗿",
+       LoadingSubtitle = "Vui lòng chờ lọ xong",
        ConfigurationSaving = { Enabled = false },
        Discord = { Enabled = false },
        KeySystem = false
@@ -1117,8 +1117,8 @@ task.spawn(function()
 
     UpdateTab:CreateSection("update")
 
-    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck cho hiếu furry"})
-    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Thêm tab update với 10 ô ghi chú"})
+    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck"})
+    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Sửa lỗi Workspace.item trong esp item"})
     local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật 3: Sửa lỗi Workspace.npc trong esp"})
     local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật 4: ."})
     local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật 5: ."})
