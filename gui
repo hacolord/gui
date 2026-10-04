@@ -79,15 +79,11 @@ task.spawn(function()
 
     -- TẢI CÁC MODULE BÊN NGOÀI BẠN CUNG CẤP VÀ NGUỒN ESP CHUNG MỚI
     safeLoad("https://raw.githubusercontent.com/hacolord/target/refs/heads/main/target", "Target Module")
-    safeLoad("https://api.jnkie.com/api/v1/luascripts/public/343e855d45503c954284ddde7a2abf6d2373135a87a4d1b310a244c40daec3c2/download", "Nhánh 3 (Tracker)")
-    safeLoad("https://api.jnkie.com/api/v1/luascripts/public/f60d14811f882fbf6fb72382834cc4f762a85313884813a4c495a8e96702d446/download", "Nhánh 4 (Void)")
-    safeLoad("https://api.jnkie.com/api/v1/luascripts/public/88f064d48ad2706982cae18c5177722a812b93dcaef9648609ce5fdfe00a55e5/download", "Nhánh 5 (Kill All)")
-    safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Nhánh 6 (Setting)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Setting Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
-    safeLoad("https://api.jnkie.com/api/v1/luascripts/public/fabc4e6277700e9ea5c10f18854f6f9d93b511763786b6deb7c5c30dee5346ac/download", "Avoid Module")
-    safeLoad("https://raw.githubusercontent.com/hacolord/esp/refs/heads/main/esp", "ESP Module (Player & Item)")
-    safeLoad("https://raw.githubusercontent.com/hacolord/other-script/refs/heads/main/other%20script", "Others Module (Float & Auto TP)")
+    safeLoad("https://raw.githubusercontent.com/hacolord/esp/refs/heads/main/esp", "ESP Module")
+    safeLoad("https://raw.githubusercontent.com/hacolord/other-script/refs/heads/main/other%20script", "Others Module")
 
     -- 2. KHỞI TẠO CÁC MINI GUI DỰA TRÊN CẤU TRÚC GỐC
     local oldGui = playerGui:FindFirstChild("TargetFlyMiniGuiSystem")
