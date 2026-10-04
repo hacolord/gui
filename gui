@@ -68,8 +68,7 @@ task.spawn(function()
     safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/esp/refs/heads/main/esp", "ESP Module")
-    safeLoad("https://raw.githubusercontent.com/hacolord/other-script/refs/heads/main/other%20script", "Others Module")
-
+    
     -- 2. KHỞI TẠO CÁC MINI GUI DỰA TRÊN CẤU TRÚC GỐC
     local oldGui = playerGui:FindFirstChild("TargetFlyMiniGuiSystem")
     if oldGui then oldGui:Destroy() end
