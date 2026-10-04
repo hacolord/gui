@@ -46,28 +46,13 @@ task.spawn(function()
     local function safeLoad(url, name)
         task.spawn(function()
             local loadSuccess, loadErr = pcall(function()
-                if not req then
-                    return
-                end
-
-                local response = req({
-                    Url = url,
-                    Method = "GET",
-                    Headers = {
-                        ["Authorization"] = "token " .. token,
-                        ["Accept"] = "application/vnd.github.v3.raw",
-                        ["User-Agent"] = "RobloxApp/LuaApp"
-                    }
-                })
-
-                if response and response.Success then
-                    if response.Body and response.Body ~= "" then
-                        local func, parseErr = loadstring(response.Body)
-                        if func then 
-                            func() 
-                        else
-                            warn("Lỗi cú pháp trong module " .. name .. ": " .. tostring(parseErr))
-                        end
+                local content = game:HttpGet(url)
+                if content and content ~= "" then
+                    local func, parseErr = loadstring(content)
+                    if func then
+                        func()
+                    else
+                        warn("Lỗi cú pháp trong module " .. name .. ": " .. tostring(parseErr))
                     end
                 end
             end)
@@ -1199,7 +1184,7 @@ task.spawn(function()
                    if setclipboard then
                        setclipboard(id)
                    elseif syn and syn.write_clipboard then
-                       syn.write_clipboard(id)
+                       syn.write_clipboard(tostring(currentJobId))
                    end
                end
            end
