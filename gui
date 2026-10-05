@@ -42,6 +42,10 @@ task.spawn(function()
     _G.HubState.avoidMode = _G.HubState.avoidMode or 1
     _G.HubState.avoidTargets = _G.HubState.avoidTargets or {}
 
+    -- Trạng thái Delete Files
+    _G.HubState.deleteTargetSourcePath = _G.HubState.deleteTargetSourcePath or ""
+    _G.HubState.deleteFilesEnabled = _G.HubState.deleteFilesEnabled or false
+
     -- Load external modules bất đồng bộ để tránh nghẽn luồng tạo GUI
     local function safeLoad(url, name)
         task.spawn(function()
@@ -206,6 +210,72 @@ task.spawn(function()
     flingBtn.MouseButton1Click:Connect(function()
         if not isDraggingWidget and _G.HubLogic.ToggleFling then _G.HubLogic.ToggleFling() end
     end)
+
+    -- LOGIC XỬ LÝ VÀ LÀM SẠCH CHUỖI ĐƯỜNG DẪN DỰA TRÊN LOGIC GỐC CỦA ESP ITEM / ESP NPC
+    local function getDeleteTargetContainer()
+        local pathStr = _G.HubState.deleteTargetSourcePath
+        if not pathStr or pathStr == "" or pathStr == "Workspace" or pathStr == "workspace" or pathStr == "game.Workspace" then
+            return Workspace
+        end
+
+        pathStr = string.gsub(pathStr, '^game%.', '')
+        pathStr = string.gsub(pathStr, '^workspace%.', '', 1)
+        pathStr = string.gsub(pathStr, '^Workspace%.', '', 1)
+
+        if pathStr == "" or pathStr == "Workspace" or pathStr == "workspace" then
+            return Workspace
+        end
+
+        local current = Workspace
+        for segment in string.gmatch(pathStr, "[^%.]+") do
+            if segment ~= "Workspace" and segment ~= "workspace" then
+                current = current:FindFirstChild(segment)
+            end
+            if not current then break end
+        end
+
+        return current or Workspace
+    end
+
+    -- BỘ NHỚ ĐỆM LƯU TRỮ VÀ HÀM QUẢN LÝ XÓA / KHÔI PHỤC FILE
+    local deleteCache = {}
+    local deleteChildAddedConn = nil
+
+    local function processDeleteFiles(enabled)
+        if enabled then
+            deleteCache = {}
+            local container = getDeleteTargetContainer()
+            if container then
+                for _, obj in ipairs(container:GetChildren()) do
+                    table.insert(deleteCache, {object = obj, parent = container})
+                    obj.Parent = nil
+                end
+
+                deleteChildAddedConn = container.ChildAdded:Connect(function(child)
+                    task.wait()
+                    if _G.HubState.deleteFilesEnabled then
+                        table.insert(deleteCache, {object = child, parent = container})
+                        child.Parent = nil
+                    end
+                end)
+            end
+        else
+            if deleteChildAddedConn then
+                deleteChildAddedConn:Disconnect()
+                deleteChildAddedConn = nil
+            end
+
+            for _, item in ipairs(deleteCache) do
+                if item.object and item.parent then
+                    pcall(function()
+                        item.object.Parent = item.parent
+                    end)
+                end
+            end
+
+            deleteCache = {}
+        end
+    end
 
     -- 3. KHỞI TẠO RAYFIELD WINDOW VÀ TẠO CÁC PAGES THEO MÔ PHỎNG
     local Window = Rayfield:CreateWindow({
@@ -909,6 +979,29 @@ task.spawn(function()
        end,
     })
 
+    -- [1 & 2] CÁC THÀNH PHẦN NÚT BẤM VÀ TÍNH NĂNG CHI TIẾT (XỬ LÝ DỮ LIỆU FILE/FOLDER)
+    
+    MiscTab:CreateSection("chức năng test")
+
+    local Input_DeleteTargetSource = MiscTab:CreateInput({
+       Name = "mục tiêu xoá",
+       PlaceholderText = "Mặc định: Workspace",
+       RemoveTextOnFocusLost = false,
+       Callback = function(Text)
+           _G.HubState.deleteTargetSourcePath = Text
+       end,
+    })
+
+    local Toggle_DeleteFiles = MiscTab:CreateToggle({
+       Name = "xoá file",
+       CurrentValue = false,
+       Flag = "Toggle_DeleteFiles_Flag",
+       Callback = function(Value)
+           _G.HubState.deleteFilesEnabled = Value
+           processDeleteFiles(Value)
+       end,
+    })
+
     MiscTab:CreateSection("-music system")
     local Toggle_Music = MiscTab:CreateToggle({
        Name = "music loop",
@@ -1094,9 +1187,9 @@ task.spawn(function()
 
     UpdateTab:CreateSection("update")
 
-    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm nút bật tắt Anti Void trong Void/killbirck"})
-    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Sửa lỗi Workspace.item trong esp item"})
-    local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật 3: Sửa lỗi Workspace.npc trong esp"})
+    local Note_Update_1 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 1", Content = "Cập nhật 1: Thêm chức năng test mới trong tab misc"})
+    local Note_Update_2 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 2", Content = "Cập nhật 2: Sửa lỗi cú pháp music trong tab misc"})
+    local Note_Update_3 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 3", Content = "Cập nhật 3: Sửa lỗi hiển thị esp npc trong tab esp"})
     local Note_Update_4 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 4", Content = "Cập nhật 4: ."})
     local Note_Update_5 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 5", Content = "Cập nhật 5: ."})
     local Note_Update_6 = UpdateTab:CreateParagraph({Title = "Ghi chú cập nhật 6", Content = "Cập nhật 6: ."})
@@ -1111,6 +1204,7 @@ task.spawn(function()
     
     SettingsTab:CreateSection("save/load")
 
+    -- [3] YÊU CẦU ĐỒNG BỘ CONFIG: THÊM CÁC BIẾN VÀ UI ELEMENT MỚI VÀO getUIElementsTable()
     local getUIElementsTable = function()
         return {
             Input_Speed = Input_Speed, Input_Sides = Input_Sides, Input_Dist = Input_Dist,
@@ -1136,7 +1230,8 @@ task.spawn(function()
             Toggle_Exception = Toggle_Exception, Drop_KillAllExceptions = Drop_KillAllExceptions,
             Toggle_AutoTp = Toggle_AutoTp, Toggle_Float = Toggle_Float, Toggle_Punch = Toggle_Punch,
             TargetPlayerDropdown = TargetPlayerDropdown, Toggle_ViewTarget = Toggle_ViewTarget,
-            Toggle_AntiVoid = Toggle_AntiVoid
+            Toggle_AntiVoid = Toggle_AntiVoid,
+            Input_DeleteTargetSource = Input_DeleteTargetSource, Toggle_DeleteFiles = Toggle_DeleteFiles
         }
     end
 
