@@ -69,6 +69,7 @@ task.spawn(function()
     -- TẢI CÁC MODULE BÊN NGOÀI BẠN CUNG CẤP VÀ NGUỒN ESP CHUNG MỚI
     safeLoad("https://raw.githubusercontent.com/hacolord/target/refs/heads/main/target", "Target Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Setting Module")
+    safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Void Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/fling/refs/heads/main/fling", "Fling Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/music/refs/heads/main/music", "Music Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/esp/refs/heads/main/esp", "ESP Module")
