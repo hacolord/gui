@@ -67,6 +67,7 @@ task.spawn(function()
     end
 
     -- TẢI CÁC MODULE BÊN NGOÀI BẠN CUNG CẤP VÀ NGUỒN ESP CHUNG MỚI
+    safeLoad("https://raw.githubusercontent.com/hacolord/chat/refs/heads/main/chat", "Chat Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/target/refs/heads/main/target", "Target Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/setting/refs/heads/main/setting", "Setting Module")
     safeLoad("https://raw.githubusercontent.com/hacolord/void/refs/heads/main/void", "Void Module")
